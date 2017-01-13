@@ -29,7 +29,6 @@ YAML was chosen for this spec because it's easier to write / grok.
 * Configurations can inject new stages or groups of stages into the final
   pipeline graph with keywords `before`, `after`, `first` and `last`.
 
-
 # variables
 
 Variables have hinted types and can be used within a template and child
@@ -70,8 +69,28 @@ from a common, standard template.
 ---
 id: deployClusterAws
 usage: Defines a deploy stage cluster using the AWS cloud provider
+variables:
+- name: region
+  description: The AWS region to deploy into
 definition:
   provider: aws
   account: mgmt
-  region: "{{ region }}
+  region: "{{ region }}"
+```
+
+```yaml
+# Template snippet
+id: myExampleTemplate
+variables:
+- name: regions
+  description: A list of AWS regions to deploy into
+  type: list
+stages:
+- id: deploy
+  type: deploy
+  config:
+    clusters: |
+      {{#each regions}}
+      - {{module deployClusterAws region=value }}
+      {{/regions}}
 ```
