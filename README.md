@@ -24,20 +24,20 @@ YAML was chosen for this spec because it's easier to write / grok.
   of one or more Templates.
 * Composability of Templates are done through modules. Configurations can
   configure a module, or entirely replace modules if they don't fit.
-* Templates can use Moustache template syntax (within strings only) for
+* Templates can use handlebars template syntax (within strings only) for
   better flow control.
 * Configurations can inject new stages or groups of stages into the final
   pipeline graph with keywords `before`, `after`, `first` and `last`.
 
-# moustache templating & render lifecycle
+# handlebars templating & render lifecycle
 
-For greater control over templates, Moustache is offered within string values
-of templates. Moustache templating is only allowed in string values so that the
-JSON transport can always be valid. The results of a Moustache template can and
+For greater control over templates, handlebars is offered within string values
+of templates. handlebars templating is only allowed in string values so that the
+JSON transport can always be valid. The results of a handlebars template can and
 often will result in non-string values (even object graphs).
 
 Given a Configuration JSON, Orca will resolve all parent templates, then iterate
-each one with the Configuration values, rendering all discovered moustache templates
+each one with the Configuration values, rendering all discovered handlebars templates
 in string values. Once all templates have been rendered, Orca will merge them
 together for the final pipeline configuration validation & execution.
 
@@ -162,7 +162,7 @@ Modules can be referenced by template they're defined in, each other or
 replaced by child templates and the configuration. At minimum, a module
 must have an `id`, `usage` and `definition`.
 
-Modules, combined with Moustache templating can be powerful for looping
+Modules, combined with handlebars templating can be powerful for looping
 over similar template blocks, as well as swapping cloud provider functionality
 from a common, standard template.
 
