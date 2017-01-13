@@ -29,6 +29,55 @@ YAML was chosen for this spec because it's easier to write / grok.
 * Configurations can inject new stages or groups of stages into the final
   pipeline graph with keywords `before`, `after`, `first` and `last`.
 
+# template and configuration schemas
+
+Templates and Configuration schemas feel pretty similar, but do have
+some minor differences. Configurations are expected to be the end-piece to
+a series of one or more Templates.
+
+You may notice that both Template and Configuration have a stanza named
+`configuration`: This is the Pipeline configuration view when in the UI.
+Configurations also have an additional stanza `inherit`. Users must
+explicitly define which configurations from parent Templates they want
+to import. By default, no configurations from templates are imported.
+
+```yaml
+# Template
+schema: "1"
+id: myTemplate
+variables: []
+configuration:
+  concurrentExecutions: {}
+  triggers: []
+  parameters: []
+  notifications: []
+  description: ""
+stages: []
+
+---
+# Modules are added below the template as new documents.
+```
+
+```yaml
+# Configuration
+schema: "1"
+id: myAppConfig
+pipeline:
+  application: myApp
+  name: My App Pipeline
+  template:
+    source: file://myTemplate.yml
+  variables: {}
+configuration:
+  inherit: []
+  triggers: []
+  parameters: []
+  notifications: []
+  description: ""
+
+stages: []
+```
+
 # variables
 
 Variables have hinted types and can be used within a template and child
