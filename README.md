@@ -45,6 +45,7 @@ to import. By default, no configurations from templates are imported.
 # Template
 schema: "1"
 id: myTemplate
+source: file://myParentTemplate.yml
 variables: []
 configuration:
   concurrentExecutions: {}
@@ -57,6 +58,19 @@ stages: []
 ---
 # Modules are added below the template as new documents.
 ```
+
+* `schema`: A string value defining the version of the Template schema. This is a
+  semver value (although honestly, we'll likely just do major increments).
+* `id`: The unique identifier of the template.
+* `source`: An optional field for defining the parent template to inherit from.
+  If no value is assigned, the template is considered a root template.
+* `variables`: An explicit list of variables used by the template. These variables
+  are scoped to the template itself, and will not cascade to child templates. If
+  a child template requires the same variable, it will need to be defined again in
+  that template.
+* `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of the
+  pipeline configuration you'd see in the UI.
+* `stages`: A list of stages in the pipeline.
 
 ```yaml
 # Configuration
@@ -78,6 +92,19 @@ configuration:
 stages: []
 ```
 
+* `schema`: A string value defining the version of the Configuration schema. This
+  will likely be in lock-step with the Template schema version.
+* `id`: The unique identifier of the configuration. (I'm not sure if we need this
+  yet).
+* `pipeline`: Pipeline configuration, as well as template sourcing information. The
+  variables field is a flat key/value map of concrete variable values that parent 
+  templates have defined. 
+* `configuration`: Pipeline configuration with a 1-1 mapping as you'd see in the
+  Spinnaker UI. The `inherit` field is an explicit list of keys (e.g. `triggers`,
+  `parameters`) that the configuration should inherit from parent templates. By
+  default, configurations do not inherit any configurations.
+* `stages`: Any additional stages added to the pipeline graph.
+
 # variables
 
 Variables have hinted types and can be used within a template and child
@@ -93,6 +120,33 @@ variables:
   description: A list of AWS regions to deploy into
   type: list
 ```
+
+# stages
+
+A stage is directly analogous to a Pipeline stage in the UI. It is defined by
+a minimum of `id`.
+
+```yaml
+- id: myBakeStage
+  inject: SEE_INJECTED_DOCS_BELOW
+  type: bake
+  config:
+    package: foo
+  executionOptions:
+    onStageFailure: haltEntirePipeline
+    # ...
+  notifications: []
+  comments: ""
+```
+
+A `config` map becomes a required if a stage type is defined in `type`
+(as opposed to a `module`, documented further in the `inject` section below).
+The `config` map is a 1-for-1 mapping of the stage type configuration. The 
+`executionOptions`, `notifications` and `comments` are universal for stages.
+
+```yaml
+- id: myInjectedStage
+  inject:
 
 # modules
 
