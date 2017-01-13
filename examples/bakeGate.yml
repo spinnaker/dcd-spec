@@ -1,0 +1,17 @@
+schema: "1"
+pipeline:
+  application: gate
+  name: Deploy to Test
+  # type: pipeline
+  template:
+    source: front50://spinnakerBakeRoot
+  variables:
+    # "application" is a magic var; it's automatically populated by `pipeline.application`
+    # application: "{{ application }}"
+    regions:
+    - us-east-1
+    - us-west-1
+    - us-west-2
+configuration:
+  inherit:
+  - triggers

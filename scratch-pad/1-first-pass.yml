@@ -1,0 +1,65 @@
+# Runtime configuration
+#
+# Notes
+# - cloudproviders are defined at the application-level, but templates can
+#   expect whatever cloudproviders. Do we ignore missing validators or fatal?
+#   Do we leave this behavior up to end-users? Maybe add in "pipeline" what
+#   cloudproviders are expected from the upstream and validate on that.
+# - Dynamic placeholders. Can't use SpEL syntax, since that would conflict 
+#   with real expressions we want to have in the templates. Jinja2-style?
+# - Targetted template value overrides could be done with "{STAGE_TYPE}.{ID}.{ATTRIBUTE} = 'foo'".
+---
+schema: "1"
+application: swill
+pipeline:
+  name: Deploy to Prestaging
+  type: pipeline|strategy
+  template:
+    # Maybe eventually we'd support multiple sources? For now, a single source
+    # seems to make the most sense. Decoration / inheritance would happen at
+    # a singular template level, rather than aspect/trait level.
+    # Thinking a schema similar:
+    # - ${PROVIDER_NAME}://${LOCATOR}[@${VERSION}]
+    # - front50://blah-template@~1.x
+    # - git://blah-blah@1.0.0
+    source: WHATEVER-SOURCE
+    # Debating whether or not including an explicit template imports scheme is
+    # the right way to go. I think it makes sense for things like pipeline
+    # parameters: Some implementors may not want to import params in favor of
+    # statically defining some with variables.
+    imports:
+    - configuration.parameters
+
+# Raw is a power-user map entry that can be used to directly add data into
+# the final JSON blob.
+raw:
+  executionEngine: v2
+variables:
+- name: foo
+  value: bar
+configuration:
+  concurrentExecutions:
+    disable: false
+    parallel: true
+  # Parameters inherit from the upstream? 
+  parameters:
+  - name: version
+    # override=true is required for any parameters that have been defined in
+    # upstream templates.
+    override: true
+    description: ""
+    default: ""
+    options: []
+  triggers:
+  - type: jenkins
+    enabled: false
+    master: opseng
+    job: "ZZ-lol-demo"
+# How can we clearly define template stage overrides versus additional stages?
+# How would we handle updates?
+stages:
+# ids should be human-readable, but unchanging across versions. If a version
+# changes an id, maybe we could eventually include a "migrations" block?
+- id: checkPreconditions0
+  # Not sure if we want to get crazy with the templating / expressions?
+  name: Check Preconditions ({{ stages.checkPreconditions0.regions|join(',') }})

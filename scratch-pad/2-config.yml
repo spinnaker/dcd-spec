@@ -1,0 +1,53 @@
+# Template configuration
+schema: "1"
+pipeline:
+  application: gate
+  name: Deploy to Main
+  # pipeline or strategy, pipeline default
+  type: pipeline
+  template:
+    source: WHATEVER-SOURCE
+configuration:
+  # A list of configurations from upstream templates to inherit from.
+  # By default, nothing is inherited.
+  inherit:
+  - concurrentExecutions
+  - parameters
+  notifications:
+  - type: slack
+    level: pipeline
+    channel: "#det"
+    when:
+    - pipeline.failed
+stages:
+# Example of referencing a template. Do we want this? In this contrived
+# example, we'd actually just build this variable into the root template.
+# This is using the fully-qualified ID: "{type}.{type_id}.{stage_id}"
+- id: template.spinnakerRoot.bake
+  package: "{{ var.application }}"
+- id: callJenkins
+  type: jenkins
+  # Inject allows modifying the pipeline graph. Injecting a stage will
+  # reorder the pipeline, reassigning any stages as necessary.
+  inject:
+    after: template.spinnakerRoot.bake
+    # before
+    # first: true
+    # last: true
+modules:
+# Modules do not have fully-qualified ids. If a parent template has a
+# module by the same ID, it will overwrite it (with a warning). We could
+# include a flag for `decorate: true`, if we want to merge them together?
+# Sounds like things could get real unpredictable.
+- id: module.deployClusters
+  definition:
+  - region: us-west-2
+    # ...
+- id: module.failoverDeployClusters
+  # ...
+# Raw can be used to add arbitrary data into the final pipeline JSON. I
+# wouldn't forecast this as getting much use, but is a nice power-user
+# feature.
+raw:
+  executionEngine: v2
+
