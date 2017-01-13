@@ -94,3 +94,67 @@ stages:
       - {{module deployClusterAws region=value }}
       {{/regions}}
 ```
+
+# injection
+
+A Configuration can make final mutations to the pipeline graph defined
+in parent Templates. Stage injection can be done either at a singular
+stage level, or as a collection of stages via a module.
+
+The `inject` stanza can take the following:
+
+```yaml
+inject:
+  before: "{type.type_id}"
+  after: "{type.type_id}"
+  first: true|false
+  last: true|false
+
+# formatting:
+type: stage|module
+```
+
+```yaml
+# Single stage
+id: myApp
+pipeline:
+  template:
+    # This template defines a pipeline "bake" -> "deploy" (these are ids,
+    # as well as the stage type).
+    source: spinnaker://myPipelineTemplate
+stages:
+# We want to add a manualJudgement stage to propagate authentication
+- id: manualJudgement
+  type: manualJudgement
+  inject:
+    before: stage.deploy
+  config:
+    propagateAuthentication: true
+    notifications:
+    - type: slack
+      channel: "#det"
+      when:
+      - awaiting
+```
+
+```yaml
+# Module
+id: myApp
+pipeline:
+  template:
+    source: spinnaker://myPipelineTemplate
+stages:
+- id: injectedStages
+  inject:
+    before: module.multipleStages
+
+---
+id: multipleStages
+usage: Pretend this has multiple stages
+definition:
+- id: one
+  type: wait
+- id: two
+  type: wait
+  dependsOn: one
+```
