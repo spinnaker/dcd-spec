@@ -29,6 +29,18 @@ YAML was chosen for this spec because it's easier to write / grok.
 * Configurations can inject new stages or groups of stages into the final
   pipeline graph with keywords `before`, `after`, `first` and `last`.
 
+# moustache templating & render lifecycle
+
+For greater control over templates, Moustache is offered within string values
+of templates. Moustache templating is only allowed in string values so that the
+JSON transport can always be valid. The results of a Moustache template can and
+often will result in non-string values (even object graphs).
+
+Given a Configuration JSON, Orca will resolve all parent templates, then iterate
+each one with the Configuration values, rendering all discovered moustache templates
+in string values. Once all templates have been rendered, Orca will merge them
+together for the final pipeline configuration validation & execution.
+
 # template and configuration schemas
 
 Templates and Configuration schemas feel pretty similar, but do have
@@ -143,10 +155,6 @@ A `config` map becomes a required if a stage type is defined in `type`
 (as opposed to a `module`, documented further in the `inject` section below).
 The `config` map is a 1-for-1 mapping of the stage type configuration. The 
 `executionOptions`, `notifications` and `comments` are universal for stages.
-
-```yaml
-- id: myInjectedStage
-  inject:
 
 # modules
 
