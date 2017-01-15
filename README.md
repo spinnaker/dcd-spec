@@ -1,11 +1,10 @@
 # dcd-spec
 
-A rough POC of how declarative continuous delivery in Spinnaker could
-look.
+A living document of my proposed Spinnaker DCD config language. It's 
+still early design / POC. Despite the other notes / example files in 
+the repo, the README should be considered authorative.
 
-**WIP: Still working on this README**
-
-* Concrete examples can be seen in the [examples](examples/) directory.
+* Larger examples can be seen in the [examples](examples/) directory.
 * The [scratch-pad](scratch-pad) directory is just rough scribblings if you're
   curious. The main concepts will wind up distilled into this readme.
 
