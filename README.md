@@ -36,6 +36,21 @@ of templates. handlebars templating is only allowed in string values so that the
 JSON transport can always be valid. The results of a handlebars template can and
 often will result in non-string values (even object graphs).
 
+You will see later both stages and modules support conditional logic for their 
+inclusion. Not providing a conditional evaluates to always `true`, or always 
+included. The following operators are supported:
+
+* `if_eq VARIABLE VALUE`: Returns true if `VARIABLE` is equal to
+  `VALUE`
+* `if_ne VARIABLE VALUE`: Returns true if `VARIABLE` is not equal
+  to `VALUE`
+* `if_in VARIABLE key|val VALUE`: Returns true if `VALUE`
+  is either in a map or list
+  * `if_in regionCapacity key 'us-west-1'`
+  * `if_in regions value 'us-east-1'`
+* `if_nin`
+* ???
+
 Given a Configuration JSON, Orca will resolve all parent templates, then iterate
 each one with the Configuration values, rendering all discovered handlebars templates
 in string values. Once all templates have been rendered, Orca will merge them
@@ -149,6 +164,7 @@ a minimum of `id`.
     # ...
   notifications: []
   comments: ""
+  conditional: "{{if_eq appSupportsBake 'myAppName'}}
 ```
 
 A `config` map becomes a required if a stage type is defined in `type`
@@ -183,6 +199,7 @@ usage: Defines a deploy stage cluster using the AWS cloud provider
 variables:
 - name: region
   description: The AWS region to deploy into
+condition: "{{if_ne region 'ap-northeast-1'}}"
 definition:
   provider: aws
   account: mgmt
@@ -205,6 +222,50 @@ stages:
       - {{module deployClusterAws region=value }}
       {{/regions}}
 ```
+
+There is no granularity restriction to a module, and you can invoke it at
+any place that handlebar expressions are supported. Combined with 
+configuration-level module overriding, this offers a considerable amount
+of options for extensibility. For example, a template designer could
+create a template that allows end-users to override execution windows.
+
+```yaml
+# Template
+id: myExecutionWindowExample
+stages:
+- id: deploy
+  type: deploy
+  config:
+    # pretend there's valid values here
+    executionWindow: {{module deployExecutionWindow}}
+
+---
+id: deployExecutionWindow
+usage: |
+  Override this module to specify a custom execution window for the 
+  deploy stage.
+definition: {}
+```
+
+```yaml
+# Configuration
+id: myApp
+pipeline:
+  template:
+    source: spinnaker://myExecutionWindowExample
+
+---
+id: deployExecutionWindow
+usage: Implementing myExecutionWindowExample execution window.
+definition:
+  enabled: true
+  daysOfWeek: 0,1,2,3,4
+  # ...
+```
+
+A further note of extensibility, modules can call each other with
+a 5-depth callstack. Most use cases will be easily serviced by a
+depth of 5, but this ceiling is arbitrary yet deliberately low.
 
 # injection
 
