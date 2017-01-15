@@ -55,6 +55,8 @@ each one with the Configuration values, rendering all discovered handlebars temp
 in string values. Once all templates have been rendered, Orca will merge them
 together for the final pipeline configuration validation & execution.
 
+**note: Template Configurations do not support handlebars expressions**
+
 # template and configuration schemas
 
 Templates and Configuration schemas feel pretty similar, but do have
