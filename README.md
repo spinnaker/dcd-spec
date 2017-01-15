@@ -1,8 +1,8 @@
 # dcd-spec
 
-A living document of my proposed Spinnaker DCD config language. It's 
-still early design / POC. Despite the other notes / example files in 
-the repo, the README should be considered authorative.
+A living document of my proposed Spinnaker DCD config language. It's still early 
+design / POC. Despite the other notes / example files in the repo, the README 
+should be considered authorative.
 
 * Larger examples can be seen in the [examples](examples/) directory.
 * The [scratch-pad](scratch-pad) directory is just rough scribblings if you're
@@ -36,8 +36,8 @@ JSON transport can always be valid. The results of a handlebars template can and
 often will result in non-string values (even object graphs).
 
 You will see later both stages and modules support conditional logic for their 
-inclusion. Not providing a conditional evaluates to always `true`, or always 
-included. The following operators are supported:
+inclusion via the `when` stanza. Not providing a conditional evaluates to always
+`true`, or always included. The following operators are supported:
 
 * `if_eq VARIABLE VALUE`: Returns true if `VARIABLE` is equal to
   `VALUE`
@@ -51,23 +51,29 @@ included. The following operators are supported:
 * ???
 
 Given a Configuration JSON, Orca will resolve all parent templates, then iterate
-each one with the Configuration values, rendering all discovered handlebars templates
-in string values. Once all templates have been rendered, Orca will merge them
-together for the final pipeline configuration validation & execution.
+each one with the Configuration values, rendering all discovered handlebars 
+templates in string values. Once all templates have been rendered, Orca will 
+merge them together for the final pipeline configuration validation & execution.
+
+Handlebars is supported at the following levels:
+
+* Stage & module `when` stanzas
+* Module `definition` stanza (or any nested value inside)
+* Stage `config` stanza (or any nested value inside)
 
 **note: Template Configurations do not support handlebars expressions**
 
 # template and configuration schemas
 
-Templates and Configuration schemas feel pretty similar, but do have
-some minor differences. Configurations are expected to be the end-piece to
-a series of one or more Templates.
+Templates and Configuration schemas feel pretty similar, but do have some minor 
+differences. Configurations are expected to be the end-piece to a series of one 
+or more Templates.
 
 You may notice that both Template and Configuration have a stanza named
 `configuration`: This is the Pipeline configuration view when in the UI.
-Configurations also have an additional stanza `inherit`. Users must
-explicitly define which configurations from parent Templates they want
-to import. By default, no configurations from templates are imported.
+Configurations also have an additional stanza `inherit`. Users must explicitly 
+define which configurations from parent Templates they want to import. 
+By default, no configurations from templates are imported.
 
 ```yaml
 # Template
@@ -87,17 +93,17 @@ stages: []
 # Modules are added below the template as new documents.
 ```
 
-* `schema`: A string value defining the version of the Template schema. This is a
-  semver value (although honestly, we'll likely just do major increments).
+* `schema`: A string value defining the version of the Template schema. This is 
+  a semver value (although honestly, we'll likely just do major increments).
 * `id`: The unique identifier of the template.
 * `source`: An optional field for defining the parent template to inherit from.
   If no value is assigned, the template is considered a root template.
-* `variables`: An explicit list of variables used by the template. These variables
-  are scoped to the template itself, and will not cascade to child templates. If
-  a child template requires the same variable, it will need to be defined again in
-  that template.
-* `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of the
-  pipeline configuration you'd see in the UI.
+* `variables`: An explicit list of variables used by the template. These 
+  variables are scoped to the template itself, and will not cascade to child 
+  templates. If a child template requires the same variable, it will need to be 
+  defined again in that template.
+* `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of 
+  the pipeline configuration you'd see in the UI.
 * `stages`: A list of stages in the pipeline.
 
 ```yaml
@@ -120,13 +126,13 @@ configuration:
 stages: []
 ```
 
-* `schema`: A string value defining the version of the Configuration schema. This
-  will likely be in lock-step with the Template schema version.
-* `id`: The unique identifier of the configuration. (I'm not sure if we need this
-  yet).
-* `pipeline`: Pipeline configuration, as well as template sourcing information. The
-  variables field is a flat key/value map of concrete variable values that parent 
-  templates have defined. 
+* `schema`: A string value defining the version of the Configuration schema. 
+  This will likely be in lock-step with the Template schema version.
+* `id`: The unique identifier of the configuration. (I'm not sure if we need 
+  this yet).
+* `pipeline`: Pipeline configuration, as well as template sourcing information. 
+  The variables field is a flat key/value map of concrete variable values that 
+  parent templates have defined. 
 * `configuration`: Pipeline configuration with a 1-1 mapping as you'd see in the
   Spinnaker UI. The `inherit` field is an explicit list of keys (e.g. `triggers`,
   `parameters`) that the configuration should inherit from parent templates. By
@@ -136,8 +142,7 @@ stages: []
 # variables
 
 Variables have hinted types and can be used within a template and child
-templates. They require a `name`, `description` and optionally a `type`
-field.
+templates. They require a `name`, `description` and optionally a `type` field.
 
 The `type` field accepts `int`, `float`, `list`, `object` and `string`.
 The field is only optional if the type is `string`.
@@ -151,11 +156,12 @@ variables:
 
 # stages
 
-A stage is directly analogous to a Pipeline stage in the UI. It is defined by
-a minimum of `id`.
+A stage is directly analogous to a Pipeline stage in the UI. It is defined by a 
+minimum of `id`.
 
 ```yaml
 - id: myBakeStage
+  dependsOn: myParentStage
   inject: SEE_INJECTED_DOCS_BELOW
   type: bake
   config:
@@ -165,32 +171,31 @@ a minimum of `id`.
     # ...
   notifications: []
   comments: ""
-  conditional: "{{if_eq appSupportsBake 'myAppName'}}
+  when: "{{if_eq appSupportsBake 'myAppName'}}
 ```
 
-A `config` map becomes a required if a stage type is defined in `type`
-(as opposed to a `module`, documented further in the `inject` section below).
-The `config` map is a 1-for-1 mapping of the stage type configuration. The 
+A `config` map becomes a required if a stage type is defined in `type` (as 
+opposed to a `module`, documented further in the `inject` section below). The 
+`config` map is a 1-for-1 mapping of the stage type configuration. The 
 `executionOptions`, `notifications` and `comments` are universal for stages.
 
 # modules
 
-Modules can be referenced by template they're defined in, each other or
-replaced by child templates and the configuration. At minimum, a module
-must have an `id`, `usage` and `definition`.
+Modules can be referenced by template they're defined in, each other or replaced 
+by child templates and the configuration. At minimum, a module must have an 
+`id`, `usage` and `definition`.
 
-Modules, combined with handlebars templating can be powerful for looping
-over similar template blocks, as well as swapping cloud provider functionality
-from a common, standard template.
+Modules, combined with handlebars templating can be powerful for looping over 
+similar template blocks, as well as swapping cloud provider functionality from 
+a common, standard template.
 
-* `id` is used for referencing across templates. If child templates also 
-  define a module for the same `id`, the child template's module will 
-  take precedence.
+* `id` is used for referencing across templates. If child templates also define 
+  a module for the same `id`, the child template's module will take precedence.
 * `usage` is templating-only usage documentation. It is a required field.
-* `definition` is the templating value. It can be any data type and its
-  value will be injected wherever the module is called.
-* `variables` *(optional)* are used to define any variables that the
-  module needs injected into it.
+* `definition` is the templating value. It can be any data type and its value 
+  will be injected wherever the module is called.
+* `variables` *(optional)* are used to define any variables that the module 
+  needs injected into it.
 
 ```yaml
 # Modules MUST be separate documents in YAML.
@@ -200,7 +205,7 @@ usage: Defines a deploy stage cluster using the AWS cloud provider
 variables:
 - name: region
   description: The AWS region to deploy into
-condition: "{{if_ne region 'ap-northeast-1'}}"
+when: "{{if_ne region 'ap-northeast-1'}}"
 definition:
   provider: aws
   account: mgmt
@@ -224,11 +229,11 @@ stages:
       {{/regions}}
 ```
 
-There is no granularity restriction to a module, and you can invoke it at
-any place that handlebar expressions are supported. Combined with 
-configuration-level module overriding, this offers a considerable amount
-of options for extensibility. For example, a template designer could
-create a template that allows end-users to override execution windows.
+Granularity restrictions of a module apply to anywhere handlebars expressions 
+are supported, and can output as little or as much data as necessary. Combined 
+with configuration-level module overriding, this offers a considerable amount of 
+options for extensibility. For example, a template designer could create a 
+template that allows end-users to override execution windows.
 
 ```yaml
 # Template
@@ -264,15 +269,15 @@ definition:
   # ...
 ```
 
-A further note of extensibility, modules can call each other with
-a 5-depth callstack. Most use cases will be easily serviced by a
-depth of 5, but this ceiling is arbitrary yet deliberately low.
+A further note of extensibility, modules can call each other with a 5-depth 
+callstack. Most use cases will be easily serviced by a depth of 5, but this 
+ceiling is arbitrary yet deliberately low.
 
 # injection
 
-A Configuration can make final mutations to the pipeline graph defined
-in parent Templates. Stage injection can be done either at a singular
-stage level, or as a collection of stages via a module.
+A Configuration can make final mutations to the pipeline graph defined in parent 
+Templates. Stage and module injection can be done either at a singular stage 
+level, or as a collection of stages via a module.
 
 The `inject` stanza can take the following:
 
@@ -288,7 +293,7 @@ type: stage|module
 ```
 
 ```yaml
-# Single stage
+# Config: Single-stage injection
 id: myApp
 pipeline:
   template:
@@ -311,19 +316,18 @@ stages:
 ```
 
 ```yaml
-# Module
-id: myApp
+# Config: Multi-stage injection
+id: myTraitTemplate
 pipeline:
   template:
     source: spinnaker://myPipelineTemplate
-stages:
-- id: injectedStages
-  inject:
-    before: module.multipleStages
+stages: []
 
 ---
 id: multipleStages
 usage: Pretend this has multiple stages
+inject: 
+  before: stage.deploy
 definition:
 - id: one
   type: wait
@@ -331,3 +335,11 @@ definition:
   type: wait
   dependsOn: one
 ```
+
+# todo
+
+Additional features that haven't been tackled yet:
+
+* Stage looping. Need a way to loop over individual stages given a variable.
+  I hesitate to add a `with_items` concept like what Ansible has, but can't
+  yet think of a better solution.
