@@ -275,9 +275,21 @@ ceiling is arbitrary yet deliberately low.
 
 # injection
 
+**IMPORTANT: Inject module support is not official.**
+
 A Configuration can make final mutations to the pipeline graph defined in parent 
 Templates. Stage and module injection can be done either at a singular stage 
 level, or as a collection of stages via a module.
+
+Injecting a stage after one that has multiple children stages will have all
+children reassigned to the parent stage. This is not for adding a stage as a
+child & sibling to other stages: Use `dependsOn` for that use case.
+
+```
+# "inject after target" behavior
+Target --> 1..* Children
+Target --> Injected --> 1..* Children
+```
 
 The `inject` stanza can take the following:
 
@@ -343,3 +355,5 @@ Additional features that haven't been tackled yet:
 * Stage looping. Need a way to loop over individual stages given a variable.
   I hesitate to add a `with_items` concept like what Ansible has, but can't
   yet think of a better solution.
+* Define how module injection of entire stages can work.
+
