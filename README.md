@@ -28,16 +28,16 @@ YAML was chosen for this spec because it's easier to write / grok.
 * Configurations can inject new stages or groups of stages into the final
   pipeline graph with keywords `before`, `after`, `first` and `last`.
 
-# handlebars templating & render lifecycle
+# handlebars templating
 
 For greater control over templates, handlebars is offered within string values
 of templates. handlebars templating is only allowed in string values so that the
 JSON transport can always be valid. The results of a handlebars template can and
 often will result in non-string values (even object graphs).
 
-You will see later both stages and modules support conditional logic for their 
-inclusion via the `when` stanza. Not providing a conditional evaluates to always
-`true`, or always included. The following operators are supported:
+You will see later both stages support conditional logic for their inclusion via 
+the `when` stanza. Not providing a conditional evaluates to always `true`, or 
+always included. The following operators are supported:
 
 * `if_eq VARIABLE VALUE`: Returns true if `VARIABLE` is equal to
   `VALUE`
@@ -50,18 +50,35 @@ inclusion via the `when` stanza. Not providing a conditional evaluates to always
 * `if_nin`
 * ???
 
-Given a Configuration JSON, Orca will resolve all parent templates, then iterate
-each one with the Configuration values, rendering all discovered handlebars 
-templates in string values. Once all templates have been rendered, Orca will 
-merge them together for the final pipeline configuration validation & execution.
+# lifecycle
+
+Setting up and using a pipeline template is two part:
+
+1. Create the template and save it to your template source (e.g. local file,
+   S3, Spinnaker, git, etc.)
+2. Create a configuration and POST it into Orca. The configuration has all of
+   the concrete parameters required for a fully-formed pipeline configuration.
+
+Internally, when applying a configuration to a pipeline template, the following
+lifecycle occurs:
+
+1. All template sources are recursively resolved based on the source provided 
+   in the configuration.
+2. All templates are flattened together; all conflict resolutions are performed
+   using last-entry wins; so the top-most (closest to configuration) template
+   will overwrite a template lower in the stack.
+3. The template stage graph is iterated over recursively and any discovered
+   Handlebars templates are rendered and expanded, using the configuration for
+   parameterization of template values.
+4. Final mutations occur to satisfy spec semantics (e.g. injection, validation, 
+   etc.)
+5. Pipeline template is transformed to standard Orca pipeline configuration.
 
 Handlebars is supported at the following levels:
 
 * Stage & module `when` stanzas
 * Module `definition` stanza (or any nested value inside)
 * Stage `config` stanza (or any nested value inside)
-
-**note: Template Configurations do not support handlebars expressions**
 
 # template and configuration schemas
 
@@ -356,4 +373,3 @@ Additional features that haven't been tackled yet:
   I hesitate to add a `with_items` concept like what Ansible has, but can't
   yet think of a better solution.
 * Define how module injection of entire stages can work.
-
