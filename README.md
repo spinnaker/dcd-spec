@@ -82,13 +82,13 @@ Handlebars is supported at the following levels:
 
 # template and configuration schemas
 
-Templates and Configuration schemas feel pretty similar, but do have some minor 
-differences. Configurations are expected to be the end-piece to a series of one 
-or more Templates.
+Templates and Configuration schemas feel pretty similar, but do have some 
+important differences. Configurations are expected to be the end-piece to a 
+series of one or more Templates.
 
 You may notice that both Template and Configuration have a stanza named
 `configuration`: This is the Pipeline configuration view when in the UI.
-Configurations also have an additional stanza `inherit`. Users must explicitly 
+Configurations also have an additional stanza `inherit`: Users must explicitly 
 define which configurations from parent Templates they want to import. 
 By default, no configurations from templates are imported.
 
@@ -122,6 +122,7 @@ stages: []
 * `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of 
   the pipeline configuration you'd see in the UI.
 * `stages`: A list of stages in the pipeline.
+* Modules are defined as separate documents below the main template definition.
 
 ```yaml
 # Configuration
@@ -139,8 +140,10 @@ configuration:
   parameters: []
   notifications: []
   description: ""
-
 stages: []
+
+---
+# Modules
 ```
 
 * `schema`: A string value defining the version of the Configuration schema. 
@@ -155,11 +158,13 @@ stages: []
   `parameters`) that the configuration should inherit from parent templates. By
   default, configurations do not inherit any configurations.
 * `stages`: Any additional stages added to the pipeline graph.
+* Modules are defined as separate documents below the main config definition.
 
 # variables
 
 Variables have hinted types and can be used within a template and child
-templates. They require a `name`, `description` and optionally a `type` field.
+templates. They require a `name`, `description` and optionally `type` and
+`defaultValue` fields.
 
 The `type` field accepts `int`, `float`, `list`, `object` and `string`.
 The field is only optional if the type is `string`.
@@ -169,12 +174,13 @@ variables:
 - name: regions
   description: A list of AWS regions to deploy into
   type: list
+  defaultValue: ['us-east-1', 'us-west-2']
 ```
 
 # stages
 
 A stage is directly analogous to a Pipeline stage in the UI. It is defined by a 
-minimum of `id`.
+minimum of `id`, `type` and `config`.
 
 ```yaml
 - id: myBakeStage
@@ -191,16 +197,15 @@ minimum of `id`.
   when: "{{if_eq appSupportsBake 'myAppName'}}
 ```
 
-A `config` map becomes a required if a stage type is defined in `type` (as 
-opposed to a `module`, documented further in the `inject` section below). The 
-`config` map is a 1-for-1 mapping of the stage type configuration. The 
-`executionOptions`, `notifications` and `comments` are universal for stages.
+The `config` map is a 1-for-1 mapping of the stage type configuration. The 
+`executionOptions`, `notifications`, `comments` and `when` are applicable to 
+any stage type.
 
 # modules
 
-Modules can be referenced by template they're defined in, each other or replaced 
-by child templates and the configuration. At minimum, a module must have an 
-`id`, `usage` and `definition`.
+Modules can be referenced by each other, the template they're defined in, in 
+child templates and replaced by child templates and the configuration. At 
+minimum, a module must have an `id`, `usage` and `definition`.
 
 Modules, combined with handlebars templating can be powerful for looping over 
 similar template blocks, as well as swapping cloud provider functionality from 
@@ -246,11 +251,11 @@ stages:
       {{/regions}}
 ```
 
-Granularity restrictions of a module apply to anywhere handlebars expressions 
-are supported, and can output as little or as much data as necessary. Combined 
-with configuration-level module overriding, this offers a considerable amount of 
-options for extensibility. For example, a template designer could create a 
-template that allows end-users to override execution windows.
+Modules may be used anywhere handlebars expressions are supported, and can 
+output as little or as much data as necessary. Combined with configuration-level
+module overriding, this offers a considerable amount of options for 
+extensibility. For example, a template designer could create a template that 
+allows end-users to override execution windows.
 
 ```yaml
 # Template
@@ -292,11 +297,11 @@ ceiling is arbitrary yet deliberately low.
 
 # injection
 
-**IMPORTANT: Inject module support is not official.**
+**IMPORTANT: Injections are currently slated as an internal phase two feature.**
 
-A Configuration can make final mutations to the pipeline graph defined in parent 
-Templates. Stage and module injection can be done either at a singular stage 
-level, or as a collection of stages via a module.
+A child Template or Configuration can make final mutations to the pipeline graph 
+defined in parent Templates. Stage and module injection can be done either at a 
+singular stage level, or as a collection of stages via a module.
 
 Injecting a stage after one that has multiple children stages will have all
 children reassigned to the parent stage. This is not for adding a stage as a
@@ -345,12 +350,11 @@ stages:
 ```
 
 ```yaml
-# Config: Multi-stage injection
+# Config: Multi-stage injection via module
 id: myTraitTemplate
 pipeline:
   template:
     source: spinnaker://myPipelineTemplate
-stages: []
 
 ---
 id: multipleStages
@@ -373,3 +377,4 @@ Additional features that haven't been tackled yet:
   I hesitate to add a `with_items` concept like what Ansible has, but can't
   yet think of a better solution.
 * Define how module injection of entire stages can work.
+* Define more flexible injection control.
