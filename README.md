@@ -39,16 +39,13 @@ You will see later both stages support conditional logic for their inclusion via
 the `when` stanza. Not providing a conditional evaluates to always `true`, or 
 always included. The following operators are supported:
 
-* `if_eq VARIABLE VALUE`: Returns true if `VARIABLE` is equal to
-  `VALUE`
-* `if_ne VARIABLE VALUE`: Returns true if `VARIABLE` is not equal
-  to `VALUE`
-* `if_in VARIABLE key|val VALUE`: Returns true if `VALUE`
-  is either in a map or list
-  * `if_in regionCapacity key 'us-west-1'`
-  * `if_in regions value 'us-east-1'`
-* `if_nin`
-* ???
+* `isEqual VARIABLE VALUE`: Returns true if `VARIABLE` is equal to `VALUE`
+* `isNotEqual VARIABLE VALUE`: Returns true if `VARIABLE` is not equal to `VALUE`
+* `contains VARIABLE VALUE`: Returns true if `VALUE` is either in a map or list
+* `containsKey VARIABLE VALUE` returns true if `VALUE` is a key in `VARIABLE`
+
+If the `when` stanza has more than one element, each conditional will be
+interpretted as `{{conditional}} AND {{conditional}}...`.
 
 # lifecycle
 
@@ -105,9 +102,7 @@ configuration:
   notifications: []
   description: ""
 stages: []
-
----
-# Modules are added below the template as new documents.
+modules: []
 ```
 
 * `schema`: A string value defining the version of the Template schema. This is 
@@ -122,7 +117,7 @@ stages: []
 * `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of 
   the pipeline configuration you'd see in the UI.
 * `stages`: A list of stages in the pipeline.
-* Modules are defined as separate documents below the main template definition.
+* `modules`: A list of modules available to the pipeline.
 
 ```yaml
 # Configuration
@@ -141,9 +136,7 @@ configuration:
   notifications: []
   description: ""
 stages: []
-
----
-# Modules
+modules: []
 ```
 
 * `schema`: A string value defining the version of the Configuration schema. 
@@ -158,7 +151,7 @@ stages: []
   `parameters`) that the configuration should inherit from parent templates. By
   default, configurations do not inherit any configurations.
 * `stages`: Any additional stages added to the pipeline graph.
-* Modules are defined as separate documents below the main config definition.
+* `modules`: A list of modules available to the pipeline.
 
 # variables
 
@@ -194,7 +187,8 @@ minimum of `id`, `type` and `config`.
     # ...
   notifications: []
   comments: ""
-  when: "{{if_eq appSupportsBake 'myAppName'}}
+  when:
+  - "{{if_eq appSupportsBake 'myAppName'}}
 ```
 
 The `config` map is a 1-for-1 mapping of the stage type configuration. The 
@@ -220,21 +214,6 @@ a common, standard template.
   needs injected into it.
 
 ```yaml
-# Modules MUST be separate documents in YAML.
----
-id: deployClusterAws
-usage: Defines a deploy stage cluster using the AWS cloud provider
-variables:
-- name: region
-  description: The AWS region to deploy into
-when: "{{if_ne region 'ap-northeast-1'}}"
-definition:
-  provider: aws
-  account: mgmt
-  region: "{{ region }}"
-```
-
-```yaml
 # Template snippet
 id: myExampleTemplate
 variables:
@@ -249,6 +228,19 @@ stages:
       {{#each regions}}
       - {{module deployClusterAws region=value }}
       {{/regions}}
+
+modules:
+- id: deployClusterAws
+  usage: Defines a deploy stage cluster using the AWS cloud provider
+  variables:
+  - name: region
+    description: The AWS region to deploy into
+  when: 
+  - "{{if_ne region 'ap-northeast-1'}}"
+  definition:
+    provider: aws
+    account: mgmt
+    region: "{{ region }}"
 ```
 
 Modules may be used anywhere handlebars expressions are supported, and can 
@@ -266,13 +258,12 @@ stages:
   config:
     # pretend there's valid values here
     executionWindow: {{module deployExecutionWindow}}
-
----
-id: deployExecutionWindow
-usage: |
-  Override this module to specify a custom execution window for the 
-  deploy stage.
-definition: {}
+modules:
+- id: deployExecutionWindow
+  usage: |
+    Override this module to specify a custom execution window for the 
+    deploy stage.
+  definition: {}
 ```
 
 ```yaml
@@ -281,19 +272,14 @@ id: myApp
 pipeline:
   template:
     source: spinnaker://myExecutionWindowExample
-
----
-id: deployExecutionWindow
-usage: Implementing myExecutionWindowExample execution window.
-definition:
-  enabled: true
-  daysOfWeek: 0,1,2,3,4
-  # ...
+modules:
+- id: deployExecutionWindow
+  usage: Implementing myExecutionWindowExample execution window.
+  definition:
+    enabled: true
+    daysOfWeek: 0,1,2,3,4
+    # ...
 ```
-
-A further note of extensibility, modules can call each other with a 5-depth 
-callstack. Most use cases will be easily serviced by a depth of 5, but this 
-ceiling is arbitrary yet deliberately low.
 
 # injection
 
@@ -378,3 +364,4 @@ Additional features that haven't been tackled yet:
   yet think of a better solution.
 * Define how module injection of entire stages can work.
 * Define more flexible injection control.
+* Define how to conditionally inherit nested lists & maps.
