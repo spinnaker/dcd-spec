@@ -8,6 +8,20 @@ should be considered authorative.
 * The [scratch-pad](scratch-pad) directory is just rough scribblings if you're
   curious. The main concepts will wind up distilled into this readme.
 
+* [dcd-spec](#dcd-spec)
+* [YAML syntax note](#yaml-syntax-note)
+* [key concepts](#key-concepts)
+* [handlebars templating](#handlebars-templating)
+* [lifecycle](#lifecycle)
+* [template and configuration schemas](#template-and-configuration-schemas)
+* [variables](#variables)
+* [stages](#stages)
+* [modules](#modules)
+* [injection](#injection)
+* [inheritance control](#inheritance-control)
+  * [RFC notes](#rfc-notes)
+* [todo](#todo)
+
 # YAML syntax note
 
 While this repo is using YAML formatting, the actual protocol will use JSON
@@ -355,6 +369,96 @@ definition:
   dependsOn: one
 ```
 
+# inheritance control
+
+**IMPORTANT: Inheritance control is a draft / RFC concept only.**
+
+In some cases, you want to inherit a stage, but need to make limited,
+un-templated changes to it. Stages support the inclusion of an
+`inheritanceControl` stanza which allows for more powerful expressions in
+modifying nested list elements or maps. Inheritance control has three different
+control methods, all of which require a `path` selector.
+
+* `merge`: Merge maps together or append to lists.
+* `replace`: Replace an object with a new object at a path.
+* `remove`: Removes an object from the path.
+
+```yaml
+# Template
+id: myTemplate
+stages:
+- id: deploy
+  type: deploy
+  config:
+    clusters:
+    - provider: aws
+      loadBalancers:
+      - instancePort: 80
+        instanceProtocol: "http"
+        lbPort: 80
+        lbProtocol: "http"
+      - instancePort: 8443
+        instanceProtocol: "https"
+        lbPort: 8443
+        lbProtocol: "https"
+```
+
+```yaml
+# Configuration
+id: myApp
+stages:
+- id: deploy
+  type: deploy
+  inheritanceControl:
+    merge:
+    - path: clusters[provider=aws].loadBalancers
+      value:
+        instancePort: 9000
+        instanceProtocol: http
+        lbPort: 9000
+        lbProtocol: http
+    replace:
+    - path: clusters[provider=aws].loadBalancers[instancePort=80]
+      value:
+        instancePort: 8080
+        instanceProtocol: http
+        lbPort: 80
+        lbProtocol: http
+    remove:
+    - path: clusters[provider=aws].loadBalancers[instancePort=8443]
+```
+
+The result would become:
+
+```yaml
+# Template
+id: myTemplate
+stages:
+- id: deploy
+  type: deploy
+  config:
+    clusters:
+    - provider: aws
+      loadBalancers:
+      - instancePort: 8080
+        instanceProtocol: http
+        lbPort: 80
+        lbProtocol: http
+      - instancePort: 9000
+        instanceProtocol: http
+        lbPort: 9000
+        lbProtocol: http
+```
+
+## RFC notes
+
+* Don't like the `path` syntax. Moving all stages and modules to be maps, rather 
+  than lists w/ ids would make path resolution much, much easier.
+* List replacement still needs to be a thing, however (like in the above LB 
+  case). Selection by attribute (`list[attr1=val,attr2=val]`) seems decent?
+  Maybe proper JsonPath (`$.clusters.listeners[?(@.lbPort==9000)]`)? Flexible,
+  but yikes.
+
 # todo
 
 Additional features that haven't been tackled yet:
@@ -365,3 +469,4 @@ Additional features that haven't been tackled yet:
 * Define how module injection of entire stages can work.
 * Define more flexible injection control.
 * Define how to conditionally inherit nested lists & maps.
+* Refactor modules, stages, variables to use maps instead of lists.
