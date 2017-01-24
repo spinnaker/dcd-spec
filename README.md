@@ -379,7 +379,8 @@ In some cases, you want to inherit a stage, but need to make limited,
 un-templated changes to it. Stages support the inclusion of an
 `inheritanceControl` stanza which allows for more powerful expressions in
 modifying nested list elements or maps. Inheritance control has three different
-control methods, all of which require a `path` selector.
+control methods, all of which require a `path` selector. The path selector
+uses JSONPath.
 
 * `merge`: Merge maps together or append to lists.
 * `replace`: Replace an object with a new object at a path.
@@ -413,21 +414,21 @@ stages:
   type: deploy
   inheritanceControl:
     merge:
-    - path: clusters[provider=aws].loadBalancers
+    - path: $.clusters[?(@.provider=aws)].loadBalancers
       value:
         instancePort: 9000
         instanceProtocol: http
         lbPort: 9000
         lbProtocol: http
     replace:
-    - path: clusters[provider=aws].loadBalancers[instancePort=80]
+    - path: $.clusters[?(@.provider=aws)].loadBalancers[?(@.instancePort==80)]
       value:
         instancePort: 8080
         instanceProtocol: http
         lbPort: 80
         lbProtocol: http
     remove:
-    - path: clusters[provider=aws].loadBalancers[instancePort=8443]
+    - path: $.clusters[?(@.provider==aws)].loadBalancers[?(@.instancePort==8443)]
 ```
 
 The result would become:
@@ -452,14 +453,6 @@ stages:
         lbProtocol: http
 ```
 
-## RFC notes
-
-* Don't like the `path` syntax. Moving all stages and modules to be maps, rather 
-  than lists w/ ids would make path resolution much, much easier.
-* List replacement still needs to be a thing, however (like in the above LB 
-  case). Selection by attribute (`list[attr1=val,attr2=val]`) seems decent?
-  Maybe proper JsonPath (`$.clusters.listeners[?(@.lbPort==9000)]`)? Flexible,
-  but yikes.
 
 # todo
 
@@ -468,7 +461,5 @@ Additional features that haven't been tackled yet:
 * Stage looping. Need a way to loop over individual stages given a variable.
   I hesitate to add a `with_items` concept like what Ansible has, but can't
   yet think of a better solution.
-* Define how module injection of entire stages can work.
-* Define more flexible injection control.
-* Define how to conditionally inherit nested lists & maps.
-* Refactor modules, stages, variables to use maps instead of lists.
+* Evaluate if we should refactor modules, stages, variables to use maps 
+  instead of lists.
