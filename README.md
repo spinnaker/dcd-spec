@@ -1,8 +1,9 @@
 # dcd-spec
 
 A living document of my proposed Spinnaker DCD config language. It's still early 
-design / POC. Despite the other notes / example files in the repo, the README 
-should be considered authorative.
+design / POC. The initial implementation of this document can be found in the
+[orca-pipelinetemplate](https://github.com/spinnaker/orca/tree/master/orca-pipelinetemplate)
+module.
 
 **Concrete examples coming soon.**
   
