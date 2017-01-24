@@ -4,25 +4,24 @@ A living document of my proposed Spinnaker DCD config language. It's still early
 design / POC. Despite the other notes / example files in the repo, the README 
 should be considered authorative.
 
-* Larger examples can be seen in the [examples](examples/) directory.
-* The [scratch-pad](scratch-pad) directory is just rough scribblings if you're
-  curious. The main concepts will wind up distilled into this readme.
+**Concrete examples coming soon.**
   
 ## toc
 
-* [dcd-spec](#dcd-spec)
-* [YAML syntax note](#yaml-syntax-note)
-* [key concepts](#key-concepts)
-* [handlebars templating](#handlebars-templating)
-* [lifecycle](#lifecycle)
-* [template and configuration schemas](#template-and-configuration-schemas)
-* [variables](#variables)
-* [stages](#stages)
-* [modules](#modules)
-* [injection](#injection)
-* [inheritance control](#inheritance-control)
-  * [RFC notes](#rfc-notes)
-* [todo](#todo)
+   * [dcd-spec](#dcd-spec)
+      * [toc](#toc)
+   * [YAML syntax note](#yaml-syntax-note)
+   * [key concepts](#key-concepts)
+   * [handlebars templating](#handlebars-templating)
+   * [lifecycle](#lifecycle)
+   * [template and configuration schemas](#template-and-configuration-schemas)
+   * [variables](#variables)
+   * [stages](#stages)
+   * [modules](#modules)
+   * [injection](#injection)
+   * [inheritance control](#inheritance-control)
+   * [extensions](#extensions)
+   * [todo](#todo)
 
 # YAML syntax note
 
@@ -453,6 +452,12 @@ stages:
         lbProtocol: http
 ```
 
+# extensions
+
+The concept of deployment models, where you can provide more advanced
+topology inheritance as variables is being provided as an extension to
+the dcd-spec. You can think of the spec outlined above as the primitives
+that fancier DSLs can be built upon.
 
 # todo
 
