@@ -7,6 +7,8 @@ should be considered authorative.
 * Larger examples can be seen in the [examples](examples/) directory.
 * The [scratch-pad](scratch-pad) directory is just rough scribblings if you're
   curious. The main concepts will wind up distilled into this readme.
+  
+## toc
 
 * [dcd-spec](#dcd-spec)
 * [YAML syntax note](#yaml-syntax-note)
