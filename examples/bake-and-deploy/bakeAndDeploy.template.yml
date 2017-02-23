@@ -1,0 +1,151 @@
+schema: "1"
+id: spindemo-bakeAndDeploy
+variables:
+- name: regions
+  description: A list of regions to bake in
+  type: list
+  defaultValue:
+  - us-east-1
+  - us-west-2
+- name: regionAvailabilityZones
+  description: A map of regions to availability zones to deploy into
+  type: object
+  defaultValue:
+    us-east-1:
+    - us-east-1c
+    - us-east-1d
+    - us-east-1e
+    us-west-2:
+    - us-west-2a
+    - us-west-2c
+configuration:
+  notifications:
+  - type: email
+    address: example@example.com
+    level: pipeline
+    message:
+      pipeline.failed:
+        text: O NOES!!
+    when:
+    - pipeline.failed
+modules:
+- id: deployCluster
+  usage: Defines a deploy stage cluster
+  variables:
+  - name: region
+    description: The AWS region to deploy into
+  - name: availabilityZones
+    description: The AWS availability zones in the region to target
+  definition:
+    account: test
+    application: "{{ application }}"
+    availabilityZones: |
+      {
+        "{{ region }}": [
+        {{#each availabilityZones}}
+          "{{ this }}"{{#unless @last}},{{/unless}}
+        {{/each}}
+        ]
+      }
+    capacity:
+      desired: 0
+      max: 0
+      min: 0
+    cooldown: 10
+    ebsOptimized: false
+    healthCheckGracePeriod: 600
+    healthCheckType: EC2
+    iamRole: BaseIAMRole
+    instanceMonitoring: false
+    instanceType: m3.large
+    keyPair: nf-test-keypair-a
+    loadBalancers:
+    - "{{ spindemo }}-test-frontend"
+    maxRemainingAsgs: 2
+    provider: aws
+    scaleDown: true
+    securityGroups: []
+    stack: test
+    strategy: redblack
+    subnetType: internal (vpc0)
+    suspendedProcesses: []
+    targetHealthyDeployPercentage: 100
+    terminationPolicies:
+    - Default
+    useSourceCapacity: false
+
+- id: checkPreconditions
+  usage: Checks to ensure expected number of server groups exist in a region
+  variables:
+  - name: region
+    description: The region the server groups are in
+  - name: expected
+    description: The expected number of server groups
+    type: int
+  definition:
+    preconditions:
+    - type: clusterSize
+      failPipeline: true
+      context:
+        cluster: "{{ application }}-test"
+        comparison: ==
+        credentials: test
+        expected: "{{ expected }}"
+        regions:
+        - "{{ region }}"
+
+stages:
+- id: bake
+  type: bake
+  name: Bake
+  config:
+    baseLabel: release
+    baseOs: trusty
+    vmType: hvm
+    cloudProviderType: aws
+    extendedAttributes: {}
+    overrideTimeout: true
+    package: mimirdemo
+    regions: |
+      [
+      {{#each regions}}
+        "{{ this }}"{{#unless @last}},{{/unless}}
+      {{/each}}
+      ]
+    sendNotifications: false
+    stageTimeoutMs: 900000
+    storeType: ebs
+    user: example@example.com
+
+- id: deploy
+  dependsOn: bake
+  type: deploy
+  name: Deploy
+  config:
+    clusters: |
+      {{#each regions}}
+        {{#assign "region"}} {{this}} {{/assign}}
+        {{#withMapKey regionAvailabilityZones region}}
+          {{module deployCluster region=region availabilityZones=this}}
+        {{/withMapKey}}
+      {{/each}}
+
+- id: check-uswest2
+  dependsOn: deploy
+  type: checkPreconditions
+  name: Check Preconditions (us-west-2)
+  config: "{{module checkPreconditions region=us-west-1 expected=2}}"
+
+- id: wait-spin1719
+  dependsOn: deploy
+  type: wait
+  name: Wait for SPIN-1719
+  config:
+    waitTime: 90
+
+- id: check-useast1
+  dependsOn: wait-spin1719
+  type: checkPreconditions
+  name: Check Preconditions (us-east-1)
+  config: "{{module checkPreconditions region=us-east-1 expected=1}}"
+

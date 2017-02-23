@@ -5,7 +5,7 @@ design / POC. The initial implementation of this document can be found in the
 [orca-pipelinetemplate](https://github.com/spinnaker/orca/tree/master/orca-pipelinetemplate)
 module.
 
-**Concrete examples coming soon.**
+You can find concrete examples in the [examples](examples) directory.
   
 ## toc
 
@@ -299,8 +299,6 @@ modules:
 
 # injection
 
-**IMPORTANT: Injections are currently slated as an internal phase two feature.**
-
 A child Template or Configuration can make final mutations to the pipeline graph 
 defined in parent Templates. Stage and module injection can be done either at a 
 singular stage level, or as a collection of stages via a module.
@@ -372,8 +370,6 @@ definition:
 ```
 
 # inheritance control
-
-**IMPORTANT: Inheritance control is a draft / RFC concept only.**
 
 In some cases, you want to inherit a stage, but need to make limited,
 un-templated changes to it. Stages support the inclusion of an
@@ -469,3 +465,7 @@ Additional features that haven't been tackled yet:
   yet think of a better solution.
 * Evaluate if we should refactor modules, stages, variables to use maps 
   instead of lists.
+* Examples
+  * inheritance control
+  * template inheritance
+  * injection

@@ -1,0 +1,6 @@
+schema: "1"
+id: spindemo-bakeAndDeploy
+pipeline:
+  application: spindemo
+  template:
+    source: https://github.com/spinnaker/dcd-spec/blob/master/examples/spindemo/bakeAndDeploy.template.yml
