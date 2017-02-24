@@ -17,7 +17,8 @@ stages:
 
 - id: judgement-uswest1
   type: manualJudgement
-  dependsOn: bake
+  dependsOn: 
+  - bake
   when:
   - "{{contains regions 'us-west-1'}}"
   config:
@@ -25,7 +26,8 @@ stages:
 
 - id: deploy-uswest1
   type: deploy
-  dependsOn: judgement-uswest1
+  dependsOn: 
+  - judgement-uswest1
   when:
   - "{{contains regions 'us-west-1'}}"
   config:
@@ -33,7 +35,8 @@ stages:
 
 - id: deploy-euwest1
   type: deploy
-  dependsOn: bake
+  dependsOn: 
+  - bake
   when:
   - "{{contains regions 'eu-west-1'}}"
   config:

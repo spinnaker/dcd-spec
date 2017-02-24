@@ -467,5 +467,3 @@ Additional features that haven't been tackled yet:
   instead of lists.
 * Examples
   * inheritance control
-  * template inheritance
-  * injection

@@ -1,0 +1,40 @@
+schema: "1"
+id: root
+variables:
+- name: regions
+  description: A list of regions to pass into Find Image
+  type: list
+  defaultValue:
+  - us-west-2
+- name: cluster
+  description: The cluster for Find Image
+configuration:
+  parameters:
+  - name: shouldDeploy
+    default: true
+stages:
+- id: findImage
+  type: findImage
+  name: Find Image
+  config:
+    cloudProvider: aws
+    cloudProviderType: aws
+    cluster: "{{ cluster }}"
+    credentials: test
+    onlyEnabled: true
+    regions: "{{ regions }}"
+    selectionStrategy: NEWEST
+
+- id: deploy
+  type: deploy
+  dependsOn: 
+  - findImage
+  name: Deploy
+  config:
+    # TODO actual cluster configuration
+    clusters: {}
+  # This is a SpEL stage condition: It could also be done with the conditional
+  # stages capability of pipeline templates.
+  stageEnabled:
+    expression: "parameters.shouldDeploy == true"
+    type: expression

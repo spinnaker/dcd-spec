@@ -118,7 +118,8 @@ stages:
     user: example@example.com
 
 - id: deploy
-  dependsOn: bake
+  dependsOn: 
+  - bake
   type: deploy
   name: Deploy
   config:
@@ -131,20 +132,23 @@ stages:
       {{/each}}
 
 - id: check-uswest2
-  dependsOn: deploy
+  dependsOn: 
+  - deploy
   type: checkPreconditions
   name: Check Preconditions (us-west-2)
   config: "{{module checkPreconditions region=us-west-1 expected=2}}"
 
 - id: wait-spin1719
-  dependsOn: deploy
+  dependsOn: 
+  - deploy
   type: wait
   name: Wait for SPIN-1719
   config:
     waitTime: 90
 
 - id: check-useast1
-  dependsOn: wait-spin1719
+  dependsOn: 
+  - wait-spin1719
   type: checkPreconditions
   name: Check Preconditions (us-east-1)
   config: "{{module checkPreconditions region=us-east-1 expected=1}}"

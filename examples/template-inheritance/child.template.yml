@@ -1,0 +1,26 @@
+schema: "1"
+source: https://github.com/spinnaker/dcd-spec/blob/master/examples/template-inheritance/root.template.yml
+id: child
+stages:
+- id: wait
+  type: wait
+  name: Wait
+  dependsOn: 
+  - deploy
+  config:
+    waitTime: 30
+
+- id: scaleDown
+  type: scaleDownCluster
+  dependsOn: 
+  - wait
+  name: Scale Down Previous Server Groups
+  config:
+    allowScaleDownActive: false
+    cloudProvider: aws
+    cloudProviderType: aws
+    cluster: "{{ cluster }}"
+    credentials: test
+    preferLargerOverNewer: false
+    regions: "{{ regions }}"
+    remainingFullSizeServerGroups: 1
