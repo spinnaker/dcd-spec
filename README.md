@@ -13,7 +13,7 @@ You can find concrete examples in the [examples](examples) directory.
       * [toc](#toc)
    * [YAML syntax note](#yaml-syntax-note)
    * [key concepts](#key-concepts)
-   * [handlebars templating](#handlebars-templating)
+   * [jinja templating](#jinja-templating)
    * [lifecycle](#lifecycle)
    * [template and configuration schemas](#template-and-configuration-schemas)
    * [variables](#variables)
@@ -39,29 +39,33 @@ YAML was chosen for this spec because it's easier to write / grok.
   of one or more Templates.
 * Composability of Templates are done through modules. Configurations can
   configure a module, or entirely replace modules if they don't fit.
-* Templates can use handlebars template syntax (within strings only) for
+* Templates can use Jinja template syntax (within strings only) for
   better flow control.
 * Configurations can inject new stages or groups of stages into the final
   pipeline graph with keywords `before`, `after`, `first` and `last`.
 
-# handlebars templating
+# jinja templating
 
-For greater control over templates, handlebars is offered within string values
-of templates. handlebars templating is only allowed in string values so that the
-JSON transport can always be valid. The results of a handlebars template can and
-often will result in non-string values (even object graphs).
+For greater control over templates, jinjava (Java implementation of Jinja) is
+offered within (most) string values of templates. Jinja templating is only
+allowed in string values, so that the JSON transport can always be valid. The
+results of Jinja templates can and often will result in non-string values (even
+object graphs).
 
-You will see later both stages support conditional logic for their inclusion via 
-the `when` stanza. Not providing a conditional evaluates to always `true`, or 
-always included. The following operators are supported:
+For more information about what's possible with Jinja, and specifically jinjava:
 
-* `isEqual VARIABLE VALUE`: Returns true if `VARIABLE` is equal to `VALUE`
-* `isNotEqual VARIABLE VALUE`: Returns true if `VARIABLE` is not equal to `VALUE`
-* `contains VARIABLE VALUE`: Returns true if `VALUE` is either in a map or list
-* `containsKey VARIABLE VALUE` returns true if `VALUE` is a key in `VARIABLE`
+* https://github.com/HubSpot/jinjava
+* http://jinja.pocoo.org/docs/2.9/ (Python implementation; good reference)
 
-If the `when` stanza has more than one element, each conditional will be
-interpretted as `{{conditional}} AND {{conditional}}...`.
+Jinja is supported at the following levels:
+
+* Stage & module `when` stanzas
+* Module `definition` stanza (or any nested value inside)
+* Stage `config` stanza (or any nested value inside)
+
+**IMPORTANT**: If your Jinja template is intended to return a list, map or
+object graph, you must ensure the output is *valid JSON*. We do plan to support
+outputting YAML in the future.
 
 # lifecycle
 
@@ -79,19 +83,13 @@ lifecycle occurs:
    in the configuration.
 2. All templates are flattened together; all conflict resolutions are performed
    using last-entry wins; so the top-most (closest to configuration) template
-   will overwrite a template lower in the stack.
+   will overwrite elements in a template lower in the stack.
 3. The template stage graph is iterated over recursively and any discovered
-   Handlebars templates are rendered and expanded, using the configuration for
+   Jinja templates are rendered and expanded, using the configuration for
    parameterization of template values.
 4. Final mutations occur to satisfy spec semantics (e.g. injection, validation, 
    etc.)
 5. Pipeline template is transformed to standard Orca pipeline configuration.
-
-Handlebars is supported at the following levels:
-
-* Stage & module `when` stanzas
-* Module `definition` stanza (or any nested value inside)
-* Stage `config` stanza (or any nested value inside)
 
 # template and configuration schemas
 
@@ -109,7 +107,11 @@ By default, no configurations from templates are imported.
 # Template
 schema: "1"
 id: myTemplate
-source: file://myParentTemplate.yml
+source: https://example.com/myParentTemplate.yml
+metadata:
+  name: Default Bake & Tag
+  description: A generic application bake & tag pipeline.
+  owner: example@example.com
 variables: []
 configuration:
   concurrentExecutions: {}
@@ -126,10 +128,10 @@ modules: []
 * `id`: The unique identifier of the template.
 * `source`: An optional field for defining the parent template to inherit from.
   If no value is assigned, the template is considered a root template.
-* `variables`: An explicit list of variables used by the template. These 
-  variables are scoped to the template itself, and will not cascade to child 
-  templates. If a child template requires the same variable, it will need to be 
-  defined again in that template.
+* `metadata`: A map of additional metadata used for rendering templates in the
+  UI. While not strictly necessary, it can be helpful for discovery.
+* `variables`: An explicit list of variables used by the template. Variables are
+  flatted together when multiple templates are inherited.
 * `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of 
   the pipeline configuration you'd see in the UI.
 * `stages`: A list of stages in the pipeline.
@@ -193,7 +195,8 @@ minimum of `id`, `type` and `config`.
 
 ```yaml
 - id: myBakeStage
-  dependsOn: myParentStage
+  dependsOn: 
+  - myParentStage
   inject: SEE_INJECTED_DOCS_BELOW
   type: bake
   config:
@@ -204,12 +207,25 @@ minimum of `id`, `type` and `config`.
   notifications: []
   comments: ""
   when:
-  - "{{if_eq appSupportsBake 'myAppName'}}
+  - "{{ appSupportsBake == 'myAppName' }}
 ```
 
 The `config` map is a 1-for-1 mapping of the stage type configuration. The 
 `executionOptions`, `notifications`, `comments` and `when` are applicable to 
 any stage type.
+
+## dependencies
+
+To create a Pipeline consisting of a series of stages, the stage definition 
+has the concept of `dependsOn`, which takes a list of stage IDs, as well as the
+`inject` stanza (covered later). In most cases, `dependsOn` is all you'll need
+to perform standard branch forking and joining operations.
+
+## conditional stages
+
+You will note the final stanza above is `when`, which takes a list of Jinja
+expressions that are evaluated together as `AND`. This allows you to include
+or exclude stages based on variables.
 
 # modules
 
@@ -217,7 +233,7 @@ Modules can be referenced by each other, the template they're defined in, in
 child templates and replaced by child templates and the configuration. At 
 minimum, a module must have an `id`, `usage` and `definition`.
 
-Modules, combined with handlebars templating can be powerful for looping over 
+Modules, combined with Jinja templating can be powerful for looping over 
 similar template blocks, as well as swapping cloud provider functionality from 
 a common, standard template.
 
@@ -240,10 +256,12 @@ stages:
 - id: deploy
   type: deploy
   config:
-    clusters: |
-      {{#each regions}}
-      - {{module deployClusterAws region=value }}
-      {{/regions}}
+    clusters: |-
+      [
+      {% for region in regions %}
+        {% module deployClusterAws region=region %}{% if not loop.last %},{% endif %}
+      {% endfor %}
+      ]
 
 modules:
 - id: deployClusterAws
@@ -252,60 +270,29 @@ modules:
   - name: region
     description: The AWS region to deploy into
   when: 
-  - "{{if_ne region 'ap-northeast-1'}}"
-  definition:
-    provider: aws
-    account: mgmt
-    region: "{{ region }}"
+  - "{{ region != 'ap-northeast-1' }}"
+  definition: |-
+    {
+      "provider": "aws",
+      "account": "myAccount",
+      "region": "{{ region }}"
+    }
 ```
 
-Modules may be used anywhere handlebars expressions are supported, and can 
+Modules may be used anywhere Jinja expressions are supported, and can 
 output as little or as much data as necessary. Combined with configuration-level
 module overriding, this offers a considerable amount of options for 
-extensibility. For example, a template designer could create a template that 
-allows end-users to override execution windows.
-
-```yaml
-# Template
-id: myExecutionWindowExample
-stages:
-- id: deploy
-  type: deploy
-  config:
-    # pretend there's valid values here
-    executionWindow: {{module deployExecutionWindow}}
-modules:
-- id: deployExecutionWindow
-  usage: |
-    Override this module to specify a custom execution window for the 
-    deploy stage.
-  definition: {}
-```
-
-```yaml
-# Configuration
-id: myApp
-pipeline:
-  template:
-    source: spinnaker://myExecutionWindowExample
-modules:
-- id: deployExecutionWindow
-  usage: Implementing myExecutionWindowExample execution window.
-  definition:
-    enabled: true
-    daysOfWeek: 0,1,2,3,4
-    # ...
-```
+extensibility.
 
 # injection
 
-A child Template or Configuration can make final mutations to the pipeline graph 
-defined in parent Templates. Stage and module injection can be done either at a 
-singular stage level, or as a collection of stages via a module.
+A child Template or Configuration can make mutations to the pipeline graph 
+defined in parent Templates.
 
 Injecting a stage after one that has multiple children stages will have all
 children reassigned to the parent stage. This is not for adding a stage as a
-child & sibling to other stages: Use `dependsOn` for that use case.
+child & sibling to other stages: Use `dependsOn` for that use case. You can
+consider injection a nuclear option for stage graph manipulation.
 
 ```
 # "inject after target" behavior
@@ -317,13 +304,10 @@ The `inject` stanza can take the following:
 
 ```yaml
 inject:
-  before: "{type.type_id}"
-  after: "{type.type_id}"
+  before: "{stage_id}"
+  after: "{stage_id}"
   first: true|false
   last: true|false
-
-# formatting:
-type: stage|module
 ```
 
 ```yaml
@@ -339,34 +323,14 @@ stages:
 - id: manualJudgement
   type: manualJudgement
   inject:
-    before: stage.deploy
+    before: deploy
   config:
     propagateAuthentication: true
     notifications:
     - type: slack
-      channel: "#det"
+      channel: "#spinnaker"
       when:
       - awaiting
-```
-
-```yaml
-# Config: Multi-stage injection via module
-id: myTraitTemplate
-pipeline:
-  template:
-    source: spinnaker://myPipelineTemplate
-
----
-id: multipleStages
-usage: Pretend this has multiple stages
-inject: 
-  before: stage.deploy
-definition:
-- id: one
-  type: wait
-- id: two
-  type: wait
-  dependsOn: one
 ```
 
 # inheritance control
@@ -381,6 +345,15 @@ uses JSONPath.
 * `merge`: Merge maps together or append to lists.
 * `replace`: Replace an object with a new object at a path.
 * `remove`: Removes an object from the path.
+
+In this example, the template defines a deploy stage that assumes a collection
+of "paved road" ports on a load balancer. The application you're building
+pipelines for fits this template perfectly, but you just need to modify the 
+listeners.
+
+This is a very advanced feature. If you find yourself having to use this
+pattern often, you should strongly consider if you can approach the templating
+problems you have differently.
 
 ```yaml
 # Template
@@ -462,8 +435,7 @@ Additional features that haven't been tackled yet:
 
 * Stage looping. Need a way to loop over individual stages given a variable.
   I hesitate to add a `with_items` concept like what Ansible has, but can't
-  yet think of a better solution.
-* Evaluate if we should refactor modules, stages, variables to use maps 
-  instead of lists.
-* Examples
-  * inheritance control
+  yet think of a better solution. It's easy enough to put a stage's definition
+  into a module, then define the repeated stages manually.
+* YAML Jinja output
+* Fully formed, public templates in spinnaker-templates repo
