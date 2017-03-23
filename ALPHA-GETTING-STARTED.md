@@ -1,6 +1,9 @@
 # alpha getting started
 
 This document is intended to help people get started with declarative pipelines.
+Things are still in a highly volatile state, but if you're looking to evaluate
+or help contribute bringing pipeline templates to a more stable place, this doc
+will help you get going.
 
 ## enabling pipeline templates
 
