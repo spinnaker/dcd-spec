@@ -108,6 +108,7 @@ By default, no configurations from templates are imported.
 schema: "1"
 id: myTemplate
 source: https://example.com/myParentTemplate.yml
+protect: true|false
 metadata:
   name: Default Bake & Tag
   description: A generic application bake & tag pipeline.
@@ -128,6 +129,9 @@ modules: []
 * `id`: The unique identifier of the template.
 * `source`: An optional field for defining the parent template to inherit from.
   If no value is assigned, the template is considered a root template.
+* `protect`: A flag (defaults false) to control whether or not configurations
+  can change or mutate the template's defined stage graph at plan/exec time. 
+  Side effects of template variables are not included in this protection.
 * `metadata`: A map of additional metadata used for rendering templates in the
   UI. While not strictly necessary, it can be helpful for discovery.
 * `variables`: An explicit list of variables used by the template. Variables are
