@@ -178,8 +178,8 @@ modules: []
 # variables
 
 Variables have hinted types and can be used within a template and child
-templates. They require a `name`, `description` and optionally `type` and
-`defaultValue` fields.
+templates. They require a `name`, `description` and optionally `type`,
+`defaultValue`, `group` and `example` fields.
 
 The `type` field accepts `int`, `float`, `list`, `object` and `string`.
 The field is only optional if the type is `string`.
@@ -187,9 +187,13 @@ The field is only optional if the type is `string`.
 ```yaml
 variables:
 - name: regions
-  description: A list of AWS regions to deploy into
+  description: A list of AWS regions to deploy into. Markdown supported.
   type: list
   defaultValue: ['us-east-1', 'us-west-2']
+  group: Deployment
+  example: |
+    Free-form text. Typical usage would be for object variable types where the
+    format could be in-obvious.
 ```
 
 # stages
@@ -260,12 +264,10 @@ stages:
 - id: deploy
   type: deploy
   config:
-    clusters: |-
-      [
+    clusters: |
       {% for region in regions %}
-        {% module deployClusterAws region=region %}{% if not loop.last %},{% endif %}
+      - {% module deployClusterAws region=region %}
       {% endfor %}
-      ]
 
 modules:
 - id: deployClusterAws
@@ -275,12 +277,10 @@ modules:
     description: The AWS region to deploy into
   when: 
   - "{{ region != 'ap-northeast-1' }}"
-  definition: |-
-    {
-      "provider": "aws",
-      "account": "myAccount",
-      "region": "{{ region }}"
-    }
+  definition:
+    provider: aws
+    account: myAccount
+    region: "{{ region }}"
 ```
 
 Modules may be used anywhere Jinja expressions are supported, and can 
@@ -441,5 +441,4 @@ Additional features that haven't been tackled yet:
   I hesitate to add a `with_items` concept like what Ansible has, but can't
   yet think of a better solution. It's easy enough to put a stage's definition
   into a module, then define the repeated stages manually.
-* YAML Jinja output
 * Fully formed, public templates in spinnaker-templates repo
