@@ -18,10 +18,13 @@ You can find concrete examples in the [examples](examples) directory.
    * [template and configuration schemas](#template-and-configuration-schemas)
    * [variables](#variables)
    * [stages](#stages)
+      * [dependencies](#dependencies)
+      * [conditional stages](#conditional-stages)
    * [modules](#modules)
    * [injection](#injection)
    * [inheritance control](#inheritance-control)
    * [extensions](#extensions)
+   * [faq](#faq)
    * [todo](#todo)
 
 # YAML syntax note
@@ -432,6 +435,22 @@ The concept of deployment models, where you can provide more advanced
 topology inheritance as variables is being provided as an extension to
 the dcd-spec. You can think of the spec outlined above as the primitives
 that fancier DSLs can be built upon.
+
+# faq
+
+## Q. What are the differences between Template Variables and Pipline Parameters?
+
+One potential confusing part about Pipeline Templates are the differences
+between Variables and Parameters. Variables are a concept for Pipeline Templates
+only and are not available at pipline execution runtime, as they're only used
+during Jinja templating.
+
+Variables are can be used to help build stages and modify the stage graph prior
+to execution.
+
+Parameters are variables that are made available for execution runtime. These
+are the values that are available via the Configuration UI, and are presented
+when manually executing a Pipeline.
 
 # todo
 
