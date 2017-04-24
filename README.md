@@ -452,6 +452,15 @@ Parameters are variables that are made available for execution runtime. These
 are the values that are available via the Configuration UI, and are presented
 when manually executing a Pipeline.
 
+## Q. I defined Pipeline Parameters or Triggers in the Template, but they don't work?
+
+While the schema supports Pipeline Configuration (triggers, parameters, etc.),
+Spinnaker currently does not yet support consuming this part of the schema. Any
+configuration under the Pipeline "Configuration" tab must be setup for the
+pipeline manually.
+
+Support for consuming these is forthcoming.
+
 # todo
 
 Additional features that haven't been tackled yet:
