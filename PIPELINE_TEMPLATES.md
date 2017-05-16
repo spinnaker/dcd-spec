@@ -354,10 +354,12 @@ field of `variables`. Just like Modules, a Partial will inherit all variables
 of the Template, but variables defined within a Partial will be locally-scoped.
 
 Once defined, a Partial is referenced within a Template's Stage list similar
-to how a normal Stage would be, except with the type `partial`, and with a 
-new required field `ref`. The `config` value would be setting the variable
-bindings of the Partial, and like any Stage config stanza, supports full Jinja
-expressions.
+to how a normal Stage would be, except with a special type `partial`. The type
+value takes a format of `partial.PARTIAL_ID`, so for example, if a partial exists
+with the ID `myPartial`, the `type` value would be `partial.myPartial`.
+
+The `config` value would be setting the variable bindings of the Partial, and 
+like any Stage config stanza, supports full Jinja expressions.
 
 An example, where a Template needs to support building and publishing an artifact
 targeted at different web browsers using Jenkins jobs.
@@ -371,8 +373,7 @@ stages:
   config:
     waitTime: 5
 - id: buildChrome
-  type: partial
-  ref: buildBrowser
+  type: partial.buildBrowser
   dependsOn:
   - firstWait
   config:
@@ -443,9 +444,6 @@ A couple key things to note here:
 2. The resultant stage graph will correctly resolve child stage `dependsOn`
    dependencies. Note that the stage `finalWait` stage only depends on 
    `buildChrome.publishTarget`, rather than every stage defined by the Partial.
-
-Further, just as Modules can reference other Modules, Partials can reference
-other Partials, however it's recommended to keep Partial references to a minimum.
 
 # Injection
 
