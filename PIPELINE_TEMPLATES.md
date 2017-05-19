@@ -103,6 +103,8 @@ actual reference schemas, please take a look at [schemas/pipeline-templates-v1](
 schema: "1"
 id: myTemplate
 source: https://example.com/myParentTemplate.yml
+imports:
+- spinnaker://myImportedTemplate
 protect: true
 metadata:
   name: Default Bake & Tag
@@ -127,6 +129,9 @@ partials: []
   Templates and Configurations to reference a Template.
 * `source`: An optional field for defining the parent template to inherit from.
   If no value is assigned, the template is considered a root Template.
+* `imports`: An optional field for defining a list of templates to import modules
+  and partials from: Stages defined in templates that are imported will be
+  ignored.
 * `protect`: A flag (defaults false) to control whether or not configurations
   can change or mutate the template's defined stage graph at plan/exec time. 
   Side effects of template variables are not included in this protection.
@@ -150,6 +155,8 @@ pipeline:
   name: My App Pipeline
   template:
     source: file://myTemplate.yml
+    imports:
+    - file://myImportedTemplate.yml
   variables: {}
 configuration:
   inherit: []
@@ -169,6 +176,8 @@ partials: []
   parent templates have defined.
   * `template`: A reference to the Template that the Configuration is applied
     against. See the Template Loaders section below for more information.
+  * `imports`: An optional reference to Templates that defined Modules and Partials
+    for reuse. Imported Templates will not include stages.
 * `configuration`: Pipeline configuration with a 1-1 mapping as you'd see in the
   Spinnaker UI. The `inherit` field is an explicit list of keys (e.g. `triggers`,
   `parameters`) that the configuration should inherit from parent templates. By
@@ -484,6 +493,56 @@ A couple key things to note here:
 2. The resultant stage graph will correctly resolve child stage `dependsOn`
    dependencies. Note that the stage `finalWait` stage only depends on 
    `buildChrome.publishTarget`, rather than every stage defined by the Partial.
+
+# Imports
+
+Importing is supported at both the Template and Configuration level and can be
+used to break up a large files into more digestable units, or to share common
+reusable components across multiple Templates. Unlike a Template hierarchy,
+imported Templates _cannot_ define Stages.
+
+Imported Templates share the same file structure as a Template, but some fields
+become ignored:
+
+* `source`: Imports cannot inherit from other templates or other Imports.
+* `imports`: Imports cannot include other Imports.
+* `configuration`: Imports cannot define template configuration settings.
+* `variables`: To prevent leaking too much into the global scope of a Template,
+  Imports cannot define root-scoped Variables.
+* `stages`: Imports are not allowed to define stages.
+
+Imports can be included into a Template or Configuration using the Template
+Loader syntax. The Partials and Modules contained in an Import are automatically
+namespaced onced imported as `{{importId}}.{{partialId|moduleId}}`
+
+```yaml
+# An import
+schema: "1"
+id: myImport
+modules:
+- id: myModule
+  variables:
+  - name: region
+  definition:
+    region: "{{ region }}"
+```
+
+```yaml
+# A template
+schema: "1"
+id: myTemplate
+imports:
+- spinnaker://myImport
+# ... 
+stages:
+- id: wait
+  type: deploy
+  config:
+    clusters: |
+      {% for region in regions %}
+      - {% module myImport.myModule region=region %}
+      {% endfor %}
+```
 
 # Injection
 
