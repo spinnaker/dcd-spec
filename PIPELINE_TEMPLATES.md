@@ -473,7 +473,8 @@ stages:
 - id: manualJudgement
   type: manualJudgement
   inject:
-    before: deploy
+    before: 
+    - deploy
   config:
     propagateAuthentication: true
     notifications:
@@ -485,6 +486,13 @@ stages:
 
 In the above example, `manualJudgement` will be injected into the graph before
 the `deploy` stage.
+
+The available hooks for injection are:
+
+* `before`: List of stage IDs. 
+* `after`: List of stage IDs.
+* `first`: Boolean.
+* `last`: Boolean.
 
 # Inheritance Control
 
