@@ -108,7 +108,7 @@ metadata:
   name: Default Bake & Tag
   description: A generic application bake & tag pipeline.
   owner: example@example.com
-  scopes: []
+  scopes: [global]
 variables: []
 configuration:
   concurrentExecutions: {}
@@ -118,6 +118,7 @@ configuration:
   description: ""
 stages: []
 modules: []
+partials: []
 ```
 
 * `schema`: A string value defining the version of the Template schema, which
@@ -137,6 +138,8 @@ modules: []
   the pipeline configuration you'd see in the UI.
 * `stages`: A list of stages in the pipeline.
 * `modules`: A list of modules available to the pipeline.
+* `partials`: A list of reusable groups of stages that can be inserted into the
+  pipeline.
 
 ## Configurations
 
@@ -157,6 +160,7 @@ configuration:
   description: ""
 stages: []
 modules: []
+partials: []
 ```
 
 * `schema`: A string value defining the version of the Configuration schema. 
@@ -174,6 +178,8 @@ modules: []
   default, configurations do not inherit any configurations.
 * `stages`: Any additional stages added to the pipeline graph.
 * `modules`: A list of modules available to the pipeline.
+* `partials`: A list of reusable groups of stages that can be inserted into the
+  pipeline.
 
 # Template Loaders
 
