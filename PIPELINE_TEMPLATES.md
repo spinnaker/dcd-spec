@@ -145,7 +145,6 @@ partials: []
 
 ```yaml
 schema: "1"
-id: myAppConfig
 pipeline:
   application: myApp
   name: My App Pipeline
@@ -165,8 +164,6 @@ partials: []
 
 * `schema`: A string value defining the version of the Configuration schema. 
   This will likely be in lock-step with the Template schema version.
-* `id`: The unique identifier of the configuration. (I'm not sure if we need 
-  this yet).
 * `pipeline`: Pipeline configuration, as well as template sourcing information. 
   The variables field is a flat key/value map of concrete variable values that 
   parent templates have defined.
@@ -468,7 +465,6 @@ Target --> Injected --> 1..* Children
 
 ```yaml
 # Config: Single-stage injection
-id: myApp
 pipeline:
   template:
     # This template defines a pipeline "bake" -> "deploy" (these are ids,
@@ -544,7 +540,6 @@ stages:
 
 ```yaml
 # Configuration
-id: myApp
 stages:
 - id: deploy
   type: deploy
