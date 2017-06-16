@@ -284,6 +284,43 @@ as `AND` statements. These expressions must evaluate to a boolean value.
 If a Stage is conditionally excluded, the stage graph will automatically be 
 recalculated.
 
+```yaml
+stages:
+- id: one
+  type: wait
+  config: {}
+  when:
+  - "{{ true }}"
+- id: two
+  dependsOn:
+  - one
+  type: wait
+  config: {}
+  when:
+  - "{{ false }}"
+- id: three
+  dependsOn:
+  - two
+  type: wait
+  config: {}
+
+## rendered to...
+
+stages:
+- id: one
+  type: wait
+  config: {}
+  when:
+  - "{{ true }}"
+- id: three
+  dependsOn:
+  - one
+  type: wait
+  config: {}
+```
+
+Conditional stages are supported within Partials as well.
+
 # Modules
 
 Modules can be referenced by each other, the Template they are defined in, 
