@@ -131,7 +131,7 @@ partials: []
   can change or mutate the template's defined stage graph at plan/exec time. 
   Side effects of template variables are not included in this protection.
 * `metadata`: A map of additional metadata used for rendering Templates in the
-  UI. `name` and `scopes` are required.
+  UI. `name`, `description` and `scopes` are required.
 * `variables`: An explicit list of variables used by the template. Variables are
   flattened together when multiple templates are inherited.
 * `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of 
