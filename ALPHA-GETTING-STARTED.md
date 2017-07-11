@@ -21,7 +21,7 @@ replaced by Jinja, so just enable that now to avoid hassles in the future.
 
 ## enabling UI support in Deck
 
-In `setting.js` add the following to the `features` map:
+In `settings.js` add the following to the `features` map:
 ```
 pipelineTemplates: true
 ```
