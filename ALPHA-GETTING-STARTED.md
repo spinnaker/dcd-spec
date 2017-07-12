@@ -19,6 +19,13 @@ pipelineTemplate:
 A handlebars renderer is currently in the codebase as well, but is being
 replaced by Jinja, so just enable that now to avoid hassles in the future.
 
+## enabling UI support in Deck
+
+In `settings.js` add the following to the `features` map:
+```
+pipelineTemplates: true
+```
+
 ## create a template
 
 Templates are currently only resolvable via HTTP(S). For evaluation and early
