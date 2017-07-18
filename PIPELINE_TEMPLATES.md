@@ -132,6 +132,12 @@ partials: []
   Side effects of template variables are not included in this protection.
 * `metadata`: A map of additional metadata used for rendering Templates in the
   UI. `name`, `description` and `scopes` are required.
+  * `scopes`: A list of free-form strings used to group templates. For templates
+     stored within Spinnaker, scopes have special meaning:
+    * Users can query Spinnaker's API for templates that have a given scope or
+      have a scope matching a given regex.
+    * When configuring a pipeline template, Spinnaker's UI offers 
+      templates that have either `global` scope or `{applicationName}` scope.
 * `variables`: An explicit list of variables used by the template. Variables are
   flattened together when multiple templates are inherited.
 * `configuration`: A map of pipeline configurations. This is a 1-to-1 mapping of 
