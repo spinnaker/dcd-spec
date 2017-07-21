@@ -217,6 +217,8 @@ defined in, or in child Templates and Configurations. They required a `name`,
 `description` and optionally `type`, `defaultValue`, `group` and `example`
 fields.
 
+Dashes are not allowed in variable names.
+
 The `type` field accepts:
 
 * `string` (default)
