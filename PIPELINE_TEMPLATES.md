@@ -78,6 +78,7 @@ We're continually extending the Jinja implementation with new Tags and Filters.
 * `frigga` filter: Used to parse string values and return Frigga naming
   convention substrings. `{{ "orca-main"|frigga('stack') }} == "main" }}`
 * `json` filter: Output a value as a JSON object. `{{ myVar|json }}`
+* `base64` filter: Output a value as a Base64 encoded string. `{{ myVar|base64 }}`
 
 **IMPORTANT**: If your Jinja template is intended to return a list, map or
 object graph, you must ensure the output is *valid YAML or JSON*.
