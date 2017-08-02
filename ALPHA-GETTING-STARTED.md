@@ -35,17 +35,21 @@ was the easiest way to iterate.
 Here's a [super barebones template](https://gist.githubusercontent.com/robzienert/04f326f3077df176b1788b30e06ed981/raw/b9eed8643e9028d27f21c3dee7ca3b0b1f8c9fee/barebones.yml) 
 (single wait stage) to get you running.
 
-## Create a template using the CLI (roer)
-roer pipeline-template publish template.yml
+## Create a template using the CLI ([roer](https://github.com/spinnaker/roer))
+
+```roer pipeline-template publish template.yml```
 
 ## Create a pipeline in the UI
 
 The UI supports creating pipelines given it's enabled as described above. Just create a new pipeline and choose Create from: "Template". Choose your template and configure it using the UI.
 
+![Create a pipeline in the UI](https://user-images.githubusercontent.com/1511533/28893520-68d1b110-77da-11e7-935d-b509464026d9.png)
+
 ## Create a pipeline using the CLI (roer)
 
-You can use a thin spinnaker CLI to publish both a template or a configuration to create a pipeline using [roer](https://github.com/spinnaker/roer)
-roer pipeline save pipeline-config.yml
+You can use a thin spinnaker CLI to publish both a template or a configuration to create a pipeline using [roer](https://github.com/spinnaker/roer).
+
+```roer pipeline save pipeline-config.yml```
 
 
 
