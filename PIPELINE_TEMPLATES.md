@@ -349,6 +349,11 @@ scoped to the Module only.
 ```yaml
 # Template snippet
 id: myExampleTemplate
+metadata:
+  name: myExampleTemplate
+  description: Modules example template
+  owner: example@example.com
+  scopes: [global]
 variables:
 - name: regions
   description: A list of AWS regions to deploy into
