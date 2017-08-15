@@ -10,7 +10,7 @@ will help you get going.
 In `orca-local.yml`:
 
 ```
-pipelineTemplate:
+pipelineTemplates:
   enabled: true
   jinja:
     enabled: true
