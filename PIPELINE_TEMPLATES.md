@@ -523,8 +523,8 @@ pipeline:
     source: spinnaker://myPipelineTemplate
 stages:
 # We want to add a manualJudgement stage to propagate authentication
-- id: manualJudgement
-  type: manualJudgement
+- id: manualJudgment
+  type: manualJudgment
   inject:
     before: 
     - deploy
