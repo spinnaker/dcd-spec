@@ -1,0 +1,23 @@
+# Exactly the same configuration as mypipeline-config.yml 
+# EXCEPT source points to combined template, and all stages
+# are defined in the template
+
+schema: "1"
+pipeline:
+  application: myApp
+  name: My super awesome pipeline
+  template:
+    source: file://combined-template.yml
+  variables:
+    waitTime: 20
+    childWaitTime: 15
+configuration:
+  notifications:
+  - address: example@example.com
+    level: pipeline
+    name: email0
+    type: email
+    when:
+    - pipeline.failed
+  triggers: []
+

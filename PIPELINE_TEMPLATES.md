@@ -35,9 +35,10 @@ For usage information, please see [ALPHA-GETTING-STARTED.md](ALPHA-GETTING-START
 
 # Taxonomy
 
-* *Pipeline Template*: An abstract, composable definition of a Spinnaker Pipeline
-* *Pipeline Configuration*: A variable-binding and user-facing configuration
-  format that inherits a Pipeline Template.
+* *Pipeline Template (template)*: An abstract, composable definition of a Spinnaker Pipeline
+* *Pipeline Configuration (configuration)*: A variable-binding and user-facing configuration
+  format that combines with a Pipeline Template to make it runnable.
+* *Spinnaker Pipeline (pipeline)*: (what you see in the UI) a pipeline, represented internally by json, that can be run by orca.
 
 # Key Concepts
 
@@ -46,42 +47,12 @@ For usage information, please see [ALPHA-GETTING-STARTED.md](ALPHA-GETTING-START
   concrete implementations of a Template.
 * Composability of Templates are done via Modules. Configurations can configure
   a module or entirely replace modules if they don't fit.
-* Templates can use Jinja expression syntax for better flow control.
 * Configurations can inject new stages into the final pipeline graph and modify
   individual objects with JSONPath.
+* Templates can use Jinja expression syntax for better flow control.
 
-# Jinja Templating
-
-Templates can use jinjava (Java implementation of Jinja) to offer greater
-productivity while creating and using templates. Jinja templating is only
-allowed in string values so that the JSON transport can always be valid. The
-results of Jinja templates can and often will result in non-string values (even
-object graphs).
-
-For more information about what's possible with Jinja, and specifically jinjava:
-
-* https://github.com/HubSpot/jinjava
-* http://jinja.pocoo.org/docs/2.9/ (Python implementation; good reference)
-
-Jinja is supported in the following areas:
-
-* Stage & module `when` stanzas
-* Module `definition` stanza (or any nested value inside)
-* Stage `config` stanza (or any nested value inside)
-* Stage `name` stanza
-* Template `metadata` values
-
-## Custom Tags & Filters
-
-We're continually extending the Jinja implementation with new Tags and Filters.
-
-* `frigga` filter: Used to parse string values and return Frigga naming
-  convention substrings. `{{ "orca-main"|frigga('stack') }} == "main" }}`
-* `json` filter: Output a value as a JSON object. `{{ myVar|json }}`
-* `base64` filter: Output a value as a Base64 encoded string. `{{ myVar|base64 }}`
-
-**IMPORTANT**: If your Jinja template is intended to return a list, map or
-object graph, you must ensure the output is *valid YAML or JSON*.
+# Explained in Pictures
+![mpt-graphic](MPTGraphic.png "Logo Title Text 1")
 
 # Template & Configuration Schemas
 
@@ -96,7 +67,7 @@ UI. **NOTE:** This stanza, while defined in the spec, is not currently consumed
 by Spinnaker itself.
 
 This section primarily gives explanations of Templates & Configurations. For
-actual reference schemas, please take a look at [schemas/pipeline-templates-v1](schemas/pipeline-templates-v1).
+actual reference schemas, please take a look at [schemas/pipeline-templates-v1](schemas/pipeline-templates-v1). For examples, please take a look at [examples/pipeline-templates-v1](examples/pipeline-templates-v1).
 
 ## Templates
 
@@ -209,6 +180,41 @@ Spinnaker using the API.
 When using the *spinnaker scheme*, it's recommended to namespace your template
 IDs, as they are globally unique, regardless of the scope you provide them while
 publishing.
+
+# Jinja Templating
+
+Templates can use jinjava (Java implementation of Jinja) to offer greater
+productivity while creating and using templates. Jinja templating is only
+allowed in string values so that the JSON transport can always be valid. The
+results of Jinja templates can and often will result in non-string values (even
+object graphs).
+
+For more information about what's possible with Jinja, and specifically jinjava:
+
+* https://github.com/HubSpot/jinjava
+* http://jinja.pocoo.org/docs/2.9/ (Python implementation; good reference)
+
+Jinja is supported in the following areas:
+
+* Stage & module `when` stanzas
+* Module `definition` stanza (or any nested value inside)
+* Stage `config` stanza (or any nested value inside)
+* Stage `name` stanza
+* Template `metadata` values
+
+## Custom Tags & Filters
+
+We're continually extending the Jinja implementation with new Tags and Filters.
+
+* `frigga` filter: Used to parse string values and return Frigga naming
+  convention substrings. `{{ "orca-main"|frigga('stack') }} == "main" }}`
+* `json` filter: Output a value as a JSON object. `{{ myVar|json }}`
+* `base64` filter: Output a value as a Base64 encoded string. `{{ myVar|base64 }}`
+
+**IMPORTANT**: If your Jinja template is intended to return a list, map or
+object graph, you must ensure the output is *valid YAML or JSON*.
+
+
 
 # Variables
 
@@ -331,6 +337,8 @@ stages:
 Conditional stages are supported within Partials as well.
 
 # Modules
+
+Modules are used to represent common functionality within stages, like stage configuration.
 
 Modules can be referenced by each other, the Template they are defined in, 
 child Templates and Configurations. Furthermore, they can be replaced by child

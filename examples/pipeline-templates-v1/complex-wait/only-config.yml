@@ -1,0 +1,40 @@
+schema: "1"
+pipeline:             
+  application: myApp
+  name: My super awesome pipeline
+  variables:           
+    waitTime: 20
+    childWaitTime: 15
+configuration:        
+  notifications:
+  - address: example@example.com
+    level: pipeline
+    name: email0
+    type: email
+    when:
+    - pipeline.failed
+  triggers: []
+stages:
+- id: wait1
+  type: wait
+  config:
+    waitTime: "{{ waitTime }}"
+- id: waitChild1
+  type: wait
+  dependsOn:
+  - wait1
+  config:
+    waitTime: "{{ waitTime }}"
+- id: waitChild2
+  type: wait
+  dependsOn:
+  - wait1
+  config:
+    waitTime: "{{ childWaitTime }}"
+- id: finalWait
+  type: wait
+  dependsOn:
+  - waitChild1
+  - waitChild2
+  config:
+    waitTime: 10
