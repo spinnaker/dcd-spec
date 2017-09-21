@@ -1,0 +1,10 @@
+---
+schema: "1"
+pipeline:
+  application: orca
+  name: Bake and Deploy
+  template:
+    source: file://template.yml
+  variables:
+    myCustomFirstStageName: "Bake"
+stages: []
