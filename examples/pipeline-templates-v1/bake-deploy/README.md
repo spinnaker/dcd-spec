@@ -1,5 +1,4 @@
 # This example shows a bake and deploy pipeline with the option to override to a find image and deploy pipeline
-The UI view for this pipeline is shown in [complex-wait-ui.png](complex-wait-ui.png). Same UI for all three options.
 
 ## Option 1: Bake
 `template.yml` shows a sample multi region bake and deploy. `bake-deploy-config.yml` shows the config for that pipeline, providing a stage name for the first stage.
