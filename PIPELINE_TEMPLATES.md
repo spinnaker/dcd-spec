@@ -228,12 +228,12 @@ Dashes are not allowed in variable names.
 
 The `type` field accepts:
 
-* `string` (default)
+* `string`
 * `int`
 * `float`
 * `boolean`
 * `list`
-* `object`
+* `object` (default)
 
 ```yaml
 variables:
