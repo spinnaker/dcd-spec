@@ -1,0 +1,13 @@
+---
+schema: "1"
+pipeline:
+  application: orca
+  name: Simple Configuraiton Inheritance Example
+  template:
+    source: file://template.yml
+  variables:
+    jenkinsTriggerJob: 'JobName'
+    jenkinsMaster: 'JenkinsMasterName'
+    propertyFile: 'properties.json'
+configuration:
+  inherit: ['concurrentExecutions', 'triggers', 'parameters']
