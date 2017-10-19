@@ -8,6 +8,6 @@ pipeline:
   variables:
     jenkinsTriggerJob: 'JobName'
     jenkinsMaster: 'JenkinsMasterName'
-    propertyFile: 'properties.json'
+    jenkinsPropertyFile: 'properties.json'
 configuration:
   inherit: ['concurrentExecutions', 'triggers', 'parameters']

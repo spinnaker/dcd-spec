@@ -15,7 +15,7 @@ configuration:
   parameters:
     - name: baseOs
       description: The baseOs to bake the image with
-  conurrentExecutions:
+  concurrentExecutions:
     parraellel: true
     limitConcurrent: true
 
