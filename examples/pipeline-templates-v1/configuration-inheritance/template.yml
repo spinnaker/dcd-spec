@@ -16,7 +16,6 @@ configuration:
     - name: baseOs
       description: The baseOs to bake the image with
   concurrentExecutions:
-    parraellel: true
     limitConcurrent: true
 
 stages:
