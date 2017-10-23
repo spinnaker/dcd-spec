@@ -1,0 +1,40 @@
+---
+schema: "1"
+id: configurationInheritance
+metadata:
+  name: Configuration Inheritance Example
+  description: A simple inheritance example of how to inherit parameters from a template
+
+configuration:
+  triggers:
+    - type: jenkins
+      job: "{{ jenkinsTriggerJob }}"
+      master: "{{ jenkinsMaster }}"
+      propertyFile: "{{ jenkinsPropertyFile }}"
+      enabled: true
+  parameters:
+    - name: baseOs
+      description: The baseOs to bake the image with
+  concurrentExecutions:
+    limitConcurrent: true
+
+stages:
+- id: bake
+  type: bake
+  name: Bake
+  config:
+    baseOs: ${trigger.parameters["baseOs"]}
+    baseLabel: release
+    cloudProviderType: aws
+    enhancedNetworking: false
+    extendedAttributes: {}
+    overrideTimeout: true
+    package: orca
+    regions:
+    - us-east-1
+    sendNotifications: true
+    showAdvancedOptions: true
+    stageTimeoutMs: 900000
+    storeType: ebs
+    user: example@example.com
+    vmType: hvm
