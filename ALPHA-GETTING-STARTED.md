@@ -7,6 +7,22 @@ will help you get going.
 
 ## enabling pipeline templates
 
+### With halyard
+
+With recent versions of halyard you can
+
+```
+hal config features edit --pipeline-templates true
+```
+
+then
+
+```
+hal deploy apply
+```
+
+### Alternatively
+
 In `orca-local.yml`:
 
 ```
@@ -19,7 +35,7 @@ pipelineTemplates:
 A handlebars renderer is currently in the codebase as well, but is being
 replaced by Jinja, so just enable that now to avoid hassles in the future.
 
-## enabling UI support in Deck
+#### enabling UI support in Deck
 
 In `settings.js` add the following to the `features` map:
 ```
