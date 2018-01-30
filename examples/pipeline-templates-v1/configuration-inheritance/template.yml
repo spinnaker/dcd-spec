@@ -4,6 +4,8 @@ id: configurationInheritance
 metadata:
   name: Configuration Inheritance Example
   description: A simple inheritance example of how to inherit parameters from a template
+  scopes:
+    - global
 
 configuration:
   triggers:
