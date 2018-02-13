@@ -557,6 +557,8 @@ The available hooks for injection are:
 
 # Inheritance Control
 
+**This feature is not fully supported and is not recommended.**
+
 In some rare cases, you want to inherit a Stage, but need to make limited,
 un-templated changes to it. Stages support the inclusion of an
 `inheritanceControl` stanza which allows for more powerful expressions in
