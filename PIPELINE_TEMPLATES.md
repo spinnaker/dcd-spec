@@ -1,11 +1,11 @@
 # Pipeline Templates Spec
 
+**IMPORTANT: We are working on a simpler templating strategy, which we expect to release this year.**
+
 Pipeline Templates are a means for standardizing and distributing reusable 
 Pipelines within a single application, different applications or even different
 Spinnaker deployments. They are the base abstraction of Pipelines and map
 very closely to the Pipeline JSON configuration format that the UI generates.
-
-*NOTE: This spec is still a WIP and may change at any time.*
 
 For usage information, please see [ALPHA-GETTING-STARTED.md](ALPHA-GETTING-STARTED.md).
 
