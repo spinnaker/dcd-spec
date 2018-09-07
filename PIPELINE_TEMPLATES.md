@@ -381,8 +381,6 @@ modules:
   variables:
   - name: region
     description: The AWS region to deploy into
-  when: 
-  - "{{ region != 'ap-northeast-1' }}"
   definition:
     provider: aws
     account: myAccount
