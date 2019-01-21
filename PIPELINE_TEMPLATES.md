@@ -388,7 +388,7 @@ modules:
 ```
 
 Modules may be used anywhere Jinja expressions are supported, and can output as
-little or as much data as necessary. Combined with configration-level module
+little or as much data as necessary. Combined with configuration-level module
 overriding, this offers a considerable amount of options for extensibility.
 
 # Partials
@@ -509,7 +509,7 @@ A couple key things to note here:
 
 A child Template or Configuration can make mutations to the Pipeline stage
 graph defined by parent Templates. Injecting a Stage will cause the stage graph
-to be automatically recalcuclated.
+to be automatically recalculated.
 
 You should consider injection an advanced option where standard `dependsOn` is
 not sufficient.
@@ -659,7 +659,7 @@ necessary to choose a format that was more human-first leaning.
 
 One potential confusing part about Pipeline Templates are the differences
 between Variables and Parameters. Variables are a concept for Pipeline Templates
-only and are not available at pipline execution runtime, as they're only used
+only and are not available at pipeline execution runtime, as they're only used
 during Jinja templating.
 
 Variables are can be used to help build stages and modify the stage graph prior
