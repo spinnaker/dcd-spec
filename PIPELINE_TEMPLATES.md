@@ -532,23 +532,26 @@ stages:
 - id: manualJudgment
   type: manualJudgment
   inject:
-    before: 
+    before:
     - deploy
   config:
     propagateAuthentication: true
     notifications:
     - type: slack
-      channel: "#spinnaker"
+      address: spinnaker
+      message:
+        manualJudgmentContinue:
+          text: "judgment delivered"
       when:
-      - awaiting
+      - manualJudgment
 ```
 
-In the above example, `manualJudgement` will be injected into the graph before
+In the above example, `manualJudgment` will be injected into the graph before
 the `deploy` stage.
 
 The available hooks for injection are:
 
-* `before`: List of stage IDs. 
+* `before`: List of stage IDs.
 * `after`: List of stage IDs.
 * `first`: Boolean.
 * `last`: Boolean.
