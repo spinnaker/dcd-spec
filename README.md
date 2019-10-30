@@ -14,3 +14,5 @@ Other resources:
   Public repo of Pipeline Templates for examples and sharing.
 * [spin-dcd-converter](https://github.com/robzienert/spin-dcd-converter) -
   Tool to bootstrap converting existing Pipelines to Pipeline Template YAML.
+* [pipeline2dcd](https://github.com/sergi/pipeline2dcd) -
+  Web browser extension to convert JSON Spinnaker pipelines to DCD pipelines.
