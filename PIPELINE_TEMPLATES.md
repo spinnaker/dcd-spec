@@ -655,7 +655,7 @@ to convert to JSON, Spinnaker's internal pipeline storage format. Since these
 files are intended to be version-controlled alongside your code, we felt it
 necessary to choose a format that was more human-first leaning.
 
-## Q. What are the differences between Template Variables and Pipline Parameters?
+## Q. What are the differences between Template Variables and Pipeline Parameters?
 
 One potential confusing part about Pipeline Templates are the differences
 between Variables and Parameters. Variables are a concept for Pipeline Templates
