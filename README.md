@@ -1,3 +1,7 @@
+# DEPRECATED - END OF LIFE
+
+Replaced by https://spinnaker.io/docs/guides/user/pipeline/pipeline-templates/
+
 # dcd-spec
 
 A living document of the Spinnaker Pipeline Templates and greater Declarative
